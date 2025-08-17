@@ -1,0 +1,6 @@
+{
+  "parent": "slingshot:item/slingshot_pull_base",
+  "textures": {
+    "layer0": "slingshot:item/slingshot_pull_3"
+  }
+}

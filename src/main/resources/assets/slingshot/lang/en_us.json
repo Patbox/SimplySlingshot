@@ -1,0 +1,14 @@
+{
+  "item.slingshot.slingshot": "Slingshot",
+  "item.slingshot.pebble": "Pebble",
+
+  "enchantment.slingshot.bounce": "Projectile Bounce",
+  "enchantment.slingshot.block_placer": "Block Placer",
+  "enchantment.slingshot.tool_user": "Tool User",
+  "enchantment.slingshot.trajectory_prediction": "Trajectory Prediction",
+  "enchantment.slingshot.boomerang": "Boomerang",
+  "enchantment.slingshot.item_sender": "Item Sender",
+
+  "subtitles.slingshot.entity.slingshot.shoot": "Projectile fired",
+  "subtitles.slingshot.entity.slingshot.load": "Slingshot stretches out"
+}

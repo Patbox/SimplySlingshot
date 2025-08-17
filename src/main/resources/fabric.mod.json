@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "simply-slingshot",
+  "version": "${version}",
+
+  "name": "Simply Slingshot",
+  "description": "Slingshot and multiple enchantments for it, making it a weapon and a tool. Damage entities, place and break blocks, throw items to your far away friend!",
+  "authors": [
+    "Patbox"
+  ],
+  "contact": {
+    "homepage": "https://pb4.eu",
+    "sources": "https://github.com/Patbox/SimplySlingshot"
+  },
+
+  "license": "LGPLv3",
+  "icon": "assets/slingshot/textures/item/slingshot.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "eu.pb4.slingshot.ModInit"
+    ],
+    "fabric-datagen": [
+      "eu.pb4.slingshot.datagen.DataGenInit"
+    ]
+  },
+  "mixins": [
+    "simply-slingshot.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "minecraft": ">=1.21.7-",
+    "polymer-core": ">=0.9.10-",
+    "polymer-resource-pack": ">=0.9.10-",
+    "polymer-virtual-entity": ">=0.9.10-",
+    "java": ">=21"
+  },
+  "breaks": {
+    "banner": "*",
+    "cardboard": "*"
+  }
+}

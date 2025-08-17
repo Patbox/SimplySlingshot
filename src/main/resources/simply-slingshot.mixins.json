@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "eu.pb4.slingshot.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "EnchantmentAccessor",
+    "LivingEntityAccessor",
+    "NoteBlockAccessor",
+    "ProjectileEntityMixin",
+    "RangedWeaponItemMixin",
+    "ServerPlayNetworkHandlerMixin",
+    "ServerWorldMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

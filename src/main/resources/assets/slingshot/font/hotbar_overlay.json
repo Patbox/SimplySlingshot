@@ -1,0 +1,21 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "a": 20,
+        "b": -20,
+        "c": -1
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "slingshot:gui/hotbar_selection.png",
+      "ascent": -43,
+      "height": 22,
+      "chars": [
+        "-"
+      ]
+    }
+  ]
+}
