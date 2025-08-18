@@ -2,7 +2,7 @@
 Do you think there isn't enough ranged weapons? Or maybe you got bored from using arrows?
 Or just wanted to have higher range while building? With just a single tool?
 
-![](https://cdn.modrinth.com/data/msOhd0jl/images/fe41bb03af1b3e8a22e476d1742135670511a7f4.png)
+![Using Slingshot to fight a Creeper](https://cdn.modrinth.com/data/msOhd0jl/images/fe41bb03af1b3e8a22e476d1742135670511a7f4.png)
 
 Simply Slingshot is a [Polymer](https://modrinth.com/mod/polymer)-powered Fabric Server Side modification adding Slingshot
 and connected to it enchantments to the game!
@@ -25,7 +25,7 @@ For it's full potential, it can be enchanted improving what can be done with it.
 
 ## [== Download on Modrinth ==](https://modrinth.com/mod/simply-slingshot)
 
-![](https://cdn.modrinth.com/data/msOhd0jl/images/665a17af430e9cdd3d3ed7e2d8207832ef8080bc.png)
+![Using Slingshot to build](https://cdn.modrinth.com/data/msOhd0jl/images/665a17af430e9cdd3d3ed7e2d8207832ef8080bc.png)
 
 ## Extra mods you might want to use!
 
