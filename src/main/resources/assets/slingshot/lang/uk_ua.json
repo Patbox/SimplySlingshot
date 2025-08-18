@@ -1,0 +1,15 @@
+{
+  "item.slingshot.slingshot": "Рогатка",
+  "item.slingshot.pebble": "Камінчик",
+
+  "enchantment.slingshot.bounce": "Рикошет",
+  "enchantment.slingshot.block_placer": "Розміщення блоків",
+  "enchantment.slingshot.tool_user": "Користувач інструменту",
+  "enchantment.slingshot.trajectory_prediction": "Передбачення траєкторії",
+  "enchantment.slingshot.boomerang": "Бумеранг",
+  "enchantment.slingshot.item_sender": "Відправник предмета",
+
+  "subtitles.slingshot.entity.slingshot.shoot": "Снаряд запалено",
+  "subtitles.slingshot.entity.slingshot.load": "Рогатка натягується",
+  "modmenu.descriptionTranslation.simply-slingshot": "Рогатка та кілька зачарувань для неї, що робить її зброєю та інструментом. наносьте шкоду мобам, розміщуйте та ламайте блоки, кидайте предмети своєму далекому другові"
+}
