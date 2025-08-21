@@ -4,9 +4,12 @@ import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import eu.pb4.polymer.virtualentity.api.tracker.DisplayTrackedData;
 import eu.pb4.polymer.virtualentity.api.tracker.EntityTrackedData;
+import eu.pb4.slingshot.SlingshotEvents;
 import eu.pb4.slingshot.block.SlingshotBlockTags;
+import eu.pb4.slingshot.item.SlingshotDataComponentTags;
 import eu.pb4.slingshot.item.SlingshotItemTags;
 import eu.pb4.slingshot.item.ench.SlingshotEnchantmentComponents;
+import eu.pb4.slingshot.mixin.FireworkRocketEntityAccessor;
 import eu.pb4.slingshot.mixin.LivingEntityAccessor;
 import eu.pb4.slingshot.mixin.NoteBlockAccessor;
 import eu.pb4.slingshot.util.BounceableExt;
@@ -21,6 +24,8 @@ import net.minecraft.block.enums.NoteBlockInstrument;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.component.type.FireworkExplosionComponent;
+import net.minecraft.component.type.FireworksComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.AttributeContainer;
@@ -33,6 +38,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.*;
@@ -198,10 +204,13 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
         }
         super.onEntityHit(result);
         if (this.onGenericHit(world, result)) {
-            this.discard();
             return;
         }
         var entity = result.getEntity();
+
+        if (SlingshotEvents.ITEM_PROJECTILE_ENTITY_HIT.invoker().onEntityHit(this, result)) {
+            return;
+        }
 
         if (this.allowSideEffects) {
             if (entity instanceof ArmorStandEntity armorStandEntity && this.isReal) {
@@ -225,7 +234,9 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
                 return;
             }
             if (((this.canUseTools && this.stack.isIn(SlingshotItemTags.ENCHANTMENT_USABLE_ITEMS))
-                    || this.stack.isIn(SlingshotItemTags.ALWAYS_ENTITY_USABLE_ITEMS)) && this.isReal) {
+                    || this.stack.isIn(SlingshotItemTags.ALWAYS_ENTITY_USABLE_ITEMS)
+                    || SlingshotDataComponentTags.contains(this.stack, SlingshotDataComponentTags.ALWAYS_ENTITY_USABLE_ITEMS)
+            ) && this.isReal) {
                 var fakePlayer = FakePlayer.get(world);
                 fakePlayer.getInventory().clear();
                 fakePlayer.equipStack(EquipmentSlot.MAINHAND, this.stack);
@@ -278,7 +289,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
         if (entity instanceof LivingEntity livingEntity && knockback > 0) {
             var dir = this.getKnockback(livingEntity, source);
-            livingEntity.takeKnockback(knockback, dir.leftDouble(), dir.rightDouble());
+            livingEntity.takeKnockback(-knockback, dir.leftDouble(), dir.rightDouble());
         }
 
         var stackCopy = this.stack.copy();
@@ -323,7 +334,10 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
         }
 
         if (this.onGenericHit(world, result)) {
-            this.discard();
+            return;
+        }
+
+        if (SlingshotEvents.ITEM_PROJECTILE_BLOCK_HIT.invoker().onBlockHit(this, result)) {
             return;
         }
 
@@ -343,7 +357,9 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
                 if (((this.canUseTools && this.stack.isIn(SlingshotItemTags.ENCHANTMENT_USABLE_ITEMS)) ||
                         (this.canPlaceBlock && this.stack.getItem() instanceof BlockItem)
-                        || this.stack.isIn(SlingshotItemTags.ALWAYS_BLOCK_USABLE_ITEMS)) && this.isReal) {
+                        || this.stack.isIn(SlingshotItemTags.ALWAYS_BLOCK_USABLE_ITEMS)
+                        || SlingshotDataComponentTags.contains(this.stack, SlingshotDataComponentTags.ALWAYS_BLOCK_USABLE_ITEMS)
+                ) && this.isReal) {
                     var fakePlayer = FakePlayer.get(world);
                     fakePlayer.getInventory().clear();
                     fakePlayer.equipStack(EquipmentSlot.MAINHAND, this.stack);
@@ -440,9 +456,13 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
         }
     }
 
-    private void tryDropSelf(ServerWorld world, Vec3d offset, boolean shouldReturn) {
+    public void tryDropSelf(ServerWorld world, Vec3d offset, boolean shouldReturn) {
         if (this.stack.isEmpty()) {
             this.discard();
+            return;
+        }
+
+        if (SlingshotEvents.ITEM_PROJECTILE_TRY_DROP_SELF.invoker().onTryDropSelf(this, world, offset, shouldReturn)) {
             return;
         }
 
@@ -471,6 +491,23 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
             world.emitGameEvent(this, GameEvent.NOTE_BLOCK_PLAY, this.getBlockPos());
         }
 
+        if (SlingshotEvents.ITEM_PROJECTILE_GENERIC_HIT.invoker().onGenericHit(this, result)) {
+            return true;
+        }
+
+        if (this.stack.isOf(Items.FIREWORK_STAR) && this.allowSideEffects) {
+            var fireworkStack = Items.FIREWORK_ROCKET.getDefaultStack();
+            fireworkStack.set(DataComponentTypes.ITEM_MODEL, Items.AIR.getComponents().get(DataComponentTypes.ITEM_MODEL));
+            fireworkStack.set(DataComponentTypes.FIREWORKS, new FireworksComponent(0,
+                    List.of(this.stack.getOrDefault(DataComponentTypes.FIREWORK_EXPLOSION, FireworkExplosionComponent.DEFAULT))));
+            var firework = new FireworkRocketEntity(world, result.getPos().getX(), result.getPos().getY(), result.getPos().getZ(), fireworkStack);
+            firework.setOwner(this.getOwner());
+            world.spawnEntity(firework);
+            ((FireworkRocketEntityAccessor) firework).callExplodeAndRemove(world);
+            this.discard();
+            return true;
+        }
+
         if (this.stack.getItem() instanceof SpawnEggItem spawnEggItem && this.allowSideEffects) {
             //noinspection unchecked
             var entityType = (EntityType<Entity>) spawnEggItem.getEntityType(this.getWorld().getRegistryManager(), this.stack);
@@ -480,6 +517,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
             var spawned = entityType.spawn(world, callback, BlockPos.ofFloored(result.getPos()), SpawnReason.SPAWN_ITEM_USE, false, false);
             if (spawned != null) {
                 this.getWorld().emitGameEvent(this, GameEvent.ENTITY_PLACE, BlockPos.ofFloored(result.getPos()));
+                this.discard();
                 return true;
             }
         }
@@ -489,8 +527,10 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
                     new AdvancedExplosionBehavior(true, false, Optional.of(1.5f),
                             Registries.BLOCK.getOptional(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity())),
                             this.getX(), this.getY(), this.getZ(), 2, false, World.ExplosionSourceType.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.ENTITY_WIND_CHARGE_WIND_BURST);
+            this.discard();
             return true;
         }
+
         return false;
     }
 
@@ -549,6 +589,34 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
     private void setStack(ItemStack itemStack) {
         this.stack = itemStack;
+    }
+
+    public boolean allowSideEffects() {
+        return allowSideEffects;
+    }
+
+    public boolean canModifyWorld() {
+        return canModifyWorld;
+    }
+
+    public boolean canPlaceBlock() {
+        return canPlaceBlock;
+    }
+
+    public boolean canUseTools() {
+        return canUseTools;
+    }
+
+    public boolean returnOnBlockHit() {
+        return returnOnBlockHit;
+    }
+
+    public boolean returnOnEntityHit() {
+        return returnOnEntityHit;
+    }
+
+    public boolean isReal() {
+        return isReal;
     }
 
     @Override

@@ -80,6 +80,9 @@ dependencies {
 	modImplementation 'eu.pb4:polymer-virtual-entity:0.13.10+1.21.8'
 	modImplementation include('eu.pb4:common-protection-api:1.0.0')
 
+	modCompileOnly 'maven.modrinth:losing-my-marbles:0.1.0+build.152-mc1.21.8-fabric'
+	modCompileOnly 'maven.modrinth:more_than_a_foxbox:1.0.1+fabric-1.21.8'
+
 	// Uncomment the following line to enable the deprecated Fabric API modules. 
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
 

@@ -2,6 +2,8 @@ package eu.pb4.slingshot.item;
 
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.slingshot.ModInit;
+import eu.pb4.slingshot.SlingshotEvents;
+import eu.pb4.slingshot.entity.FakeProjectileEntity;
 import eu.pb4.slingshot.entity.ItemProjectileEntity;
 import eu.pb4.slingshot.item.ench.SlingshotEnchantmentComponents;
 import eu.pb4.slingshot.item.ench.SlingshotEnchantments;
@@ -11,7 +13,6 @@ import eu.pb4.slingshot.util.NetHandlerExt;
 import eu.pb4.slingshot.util.SlingshotSoundEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ConsumableComponent;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -23,10 +24,8 @@ import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.item.*;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.particle.TrailParticleEffect;
 import net.minecraft.registry.Registries;
-import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -37,15 +36,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
@@ -56,6 +49,7 @@ import static eu.pb4.slingshot.ModInit.id;
 
 public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
     private static final Style HOTBAR_OVERLAY_STYLE = Style.EMPTY.withFont(id("hotbar_overlay")).withShadowColor(0);
+
     public SlingshotItem(Settings settings) {
         super(settings);
     }
@@ -77,7 +71,7 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
         if (!(user instanceof PlayerEntity playerEntity)) {
             return false;
         } else {
-            var itemStack = getProjectileType(playerEntity, stack, user.getActiveHand());
+            var itemStack = getProjectileTypeSource(playerEntity, stack, user.getActiveHand());
             if (itemStack.isEmpty()) {
                 syncHand(user, hand);
                 return false;
@@ -88,7 +82,7 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
                     syncHand(user, hand);
                     return false;
                 } else {
-                    var list = load(stack, itemStack.stack(), playerEntity);
+                    var list = this.getProjectilesFrom(stack, itemStack.stack(), playerEntity, true);
                     if (world instanceof ServerWorld serverWorld) {
                         if (!list.isEmpty()) {
                             this.shootAll(serverWorld, playerEntity, playerEntity.getActiveHand(), stack, list, getSpeed(stack, serverWorld, user, progress), 1.0F, false, null);
@@ -104,8 +98,17 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
         }
     }
 
+    private List<ItemStack> getProjectilesFrom(ItemStack weapon, ItemStack projectileSource, PlayerEntity player, boolean consume) {
+        var projectiles = SlingshotEvents.PROJECTILE_PROVIDER.invoker().getProjectilesFrom(weapon, projectileSource, player, consume);
+        if (projectiles != null) {
+            return projectiles;
+        }
+
+        return load(weapon, consume ? projectileSource : projectileSource.copy(), player);
+    }
+
     private float getSpeed(ItemStack stack, ServerWorld world, LivingEntity user, float progress) {
-        var val = new MutableFloat(progress * 1.4f);
+        var val = new MutableFloat(progress * (1.4f + (stack.isIn(SlingshotItemTags.EXTRA_PROJECTILE_SPEED) ? 0.5f : 0)));
         for (var ench : EnchantmentHelper.getEnchantments(stack).getEnchantmentEntries()) {
             ((EnchantmentAccessor) (Object) ench.getKey().value()).callModifyValue(SlingshotEnchantmentComponents.SLINGSHOT_STRENGTH, world, ench.getIntValue(), stack, user, val);
         }
@@ -118,7 +121,7 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
         if (slot == null || slot.getType() != EquipmentSlot.Type.HAND || !(entity instanceof ServerPlayerEntity player) || player.isSpectator()) {
             return;
         }
-        var projectileStack = getProjectileType(player, stack, slot == EquipmentSlot.MAINHAND ? Hand.MAIN_HAND : Hand.OFF_HAND);
+        var projectileStack = getProjectileTypeSource(player, stack, slot == EquipmentSlot.MAINHAND ? Hand.MAIN_HAND : Hand.OFF_HAND);
         if (projectileStack.isEmpty() || projectileStack.slot == -1) {
             return;
         }
@@ -130,7 +133,7 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
                 player.sendMessage(Text.literal("a".repeat(11) + "cc-").setStyle(HOTBAR_OVERLAY_STYLE), true);
             }
         } else {
-            player.sendMessage(Text.literal( "a".repeat(projectileStack.slot) + "-" + "a".repeat(9 - projectileStack.slot - 1)).setStyle(HOTBAR_OVERLAY_STYLE), true);
+            player.sendMessage(Text.literal("a".repeat(projectileStack.slot) + "-" + "a".repeat(9 - projectileStack.slot - 1)).setStyle(HOTBAR_OVERLAY_STYLE), true);
         }
         ((NetHandlerExt) player.networkHandler).slingshot$setSelectionTick(player.age);
     }
@@ -142,8 +145,8 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
         if (!(user instanceof ServerPlayerEntity player) || !(world instanceof ServerWorld serverWorld) || player.isSpectator()) {
             return;
         }
-        var projectileStack = getProjectileType(player, stack, user.getActiveHand());
-        if (projectileStack.isEmpty()) {
+        var projectileSource = getProjectileTypeSource(player, stack, user.getActiveHand());
+        if (projectileSource.isEmpty()) {
             return;
         }
 
@@ -163,40 +166,83 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
             }
 
             try {
-                var projectile = this.createArrowEntity(mirror, player, stack, projectileStack.stack(), false);
-                SlingshotEnchantments.setBounces(stack, projectile);
-                this.shoot(player, projectile, 0, getSpeed(stack, serverWorld, user, progress), 0, 0, null);
+                var projectileStacks = this.getProjectilesFrom(stack, projectileSource.stack(), player, false);
+                var spread = EnchantmentHelper.getProjectileSpread(serverWorld, stack, player, 0.0F);
+                var spreadMult = projectileStacks.size() == 1 ? 0.0F : 2.0F * spread / (float) (projectileStacks.size() - 1);
+                var baseSpread = (float) ((projectileStacks.size() - 1) % 2) * spreadMult / 2.0F;
+                var side = 1.0f;
 
-                Vec3d pos;
-
-                for (int i = 0; i < 100; i++) {
-                    projectile.tick();
-                    pos = projectile.getBoundingBox().getCenter();
-                    if (i % 2 == 1 || projectile.isRemoved()) {
-                        player.networkHandler.sendPacket(new ParticleS2CPacket(new TrailParticleEffect(pos, projectile.isRemoved() ? 0xee0000 : 0xeeeeee, 1), true, true,
-                                pos.x, pos.y, pos.z, 0, 0, 0, 0, 0));
+                for (var index = 0; index < projectileStacks.size(); index++) {
+                    var projectileStack = projectileStacks.get(index);
+                    if (projectileStack.isEmpty()) {
+                        continue;
                     }
-                    if (projectile.isRemoved()) break;
+                    float yaw = baseSpread + side * (float) ((index + 1) / 2) * spreadMult;
+                    side = -side;
+
+                    var projectile = this.createArrowEntity(mirror, player, stack, projectileStack, false);
+                    SlingshotEnchantments.setBounces(stack, projectile);
+                    this.shoot(player, projectile, 0, getSpeed(stack, serverWorld, user, progress), 0, yaw, null);
+
+                    var entity = projectile instanceof FakeProjectileEntity fakeProjectileEntity ? fakeProjectileEntity.entity : projectile;
+
+                    for (int i = 0; i < 100; i++) {
+                        entity.tick();
+                        var pos = entity.getBoundingBox().getCenter();
+                        if (i % 2 == 1 || entity.isRemoved()) {
+                            player.networkHandler.sendPacket(new ParticleS2CPacket(new TrailParticleEffect(pos, projectile.isRemoved() ? 0xee0000 : 0xeeeeee, 1), true, true,
+                                    pos.x, pos.y, pos.z, 0, 0, 0, 0, 0));
+                        }
+                        if (entity.isRemoved()) break;
+                    }
                 }
             } catch (Throwable e) {
-                if (ModInit.DEV_MODE) {
+                if (ModInit.DEV_MODE || useTime == 20) {
                     ModInit.LOGGER.error("Failed to emulate projectile path!", e);
                 }
             }
         }
     }
 
-    public ProjectileStack getProjectileType(PlayerEntity player, ItemStack stack, Hand hand) {
+    public ProjectileStack getProjectileTypeSource(PlayerEntity player, ItemStack stack, Hand hand) {
         if (hand == Hand.OFF_HAND) {
             var itemStack = player.getMainHandStack();
             if (!itemStack.isEmpty()) {
                 return new ProjectileStack(itemStack, player.getInventory().getSelectedSlot());
             }
+
+            /*for (int i = 0; i < 9; i++) {
+                itemStack = player.getInventory().getStack(i);
+                if (!itemStack.isEmpty() && itemStack != stack) {
+                    return new ProjectileStack(itemStack, i);
+                }
+            }*/
+
         } else {
             var itemStack = player.getOffHandStack();
             if (!itemStack.isEmpty() && itemStack != stack) {
                 return new ProjectileStack(itemStack, -2);
             }
+
+            /*var il = player.getInventory().getSelectedSlot() - 1;
+            var ir = player.getInventory().getSelectedSlot() + 1;
+
+            while (il >= 0 || ir < 9) {
+                if (ir < 9) {
+                    itemStack = player.getInventory().getStack(ir);
+                    if (!itemStack.isEmpty() && itemStack != stack) {
+                        return new ProjectileStack(itemStack, ir);
+                    }
+                    ir++;
+                }
+                if (il >= 0) {
+                    itemStack = player.getInventory().getStack(il);
+                    if (!itemStack.isEmpty() && itemStack != stack) {
+                        return new ProjectileStack(itemStack, il);
+                    }
+                    il--;
+                }
+            }*/
         }
 
         for (int i = 0; i < 9; i++) {
@@ -218,9 +264,13 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
         if (projectileStack.isEmpty()) {
             projectileStack = SlingshotItems.PEBBLE.getDefaultStack();
         }
-        var pos = shooter.getEyePos().subtract(0,  0.1, 0);
+        var pos = shooter.getEyePos().subtract(0, 0.1, 0);
 
         if (!EnchantmentHelper.hasAnyEnchantmentsWith(weaponStack, SlingshotEnchantmentComponents.PROJECTILE_FORCE_ITEM)) {
+            var entity = SlingshotEvents.CREATE_PROJECTILE.invoker().createProjectileEntity(world, pos, shooter, weaponStack, projectileStack);
+            if (entity != null) {
+                return entity;
+            }
             if (projectileStack.getItem() instanceof ArrowItem arrowItem) {
                 var projectile = arrowItem.createArrow(world, projectileStack, shooter, weaponStack);
                 projectile.setCritical(critical);
@@ -248,7 +298,9 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
         if (projectile instanceof ItemProjectileEntity entity && index != 0) {
             entity.setReal(false);
         }
+        SlingshotEvents.ON_SHOOT.invoker().onShoot(shooter, projectile, index, speed, divergence, yaw, target);
     }
+
     @Override
     public int getMaxUseTime(ItemStack stack, LivingEntity user) {
         return 72000;
@@ -272,7 +324,7 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
         System.out.println(new Vec3d(out.mul(MathHelper.DEGREES_PER_RADIAN)));*/
 
         var itemStack = user.getStackInHand(hand);
-        if (getProjectileType(user, itemStack, hand).isEmpty()) {
+        if (getProjectileTypeSource(user, itemStack, hand).isEmpty()) {
             return ActionResult.FAIL;
         } else {
             user.setCurrentHand(hand);
@@ -310,7 +362,7 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
-        return /*context.getPlayer() instanceof ServerPlayerEntity player && player.getActiveItem().isOf(this) ? Items.BOW : */Items.TRIAL_KEY;
+        return Items.TRIAL_KEY;
     }
 
     public record ProjectileStack(ItemStack stack, int slot) {

@@ -17,6 +17,7 @@ public class SlingshotItemTags {
     public static final TagKey<Item> HIGH_PROJECTILE_DAMAGE = of("high_projectile_damage");
     public static final TagKey<Item> ROTATE_LIKE_ITEM_ROD = of("rotate_like_item_rod");
     public static final TagKey<Item> ROTATE_LIKE_BLOCK_ROD = of("rotate_like_block_rod");
+    public static final TagKey<Item> EXTRA_PROJECTILE_SPEED = of("extra_projectile_speed");
 
     private static TagKey<Item> of(String path) {
         return TagKey.of(RegistryKeys.ITEM, ModInit.id(path));

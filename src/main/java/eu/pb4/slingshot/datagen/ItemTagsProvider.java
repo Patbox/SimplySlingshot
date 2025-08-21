@@ -52,11 +52,14 @@ class ItemTagsProvider extends FabricTagProvider.ItemTagProvider {
                 .add(Items.ITEM_FRAME)
                 .add(Items.GLOW_ITEM_FRAME)
                 .add(Items.PAINTING)
+                .add(Items.HONEYCOMB)
         ;
 
         this.valueLookupBuilder(SlingshotItemTags.ALWAYS_ENTITY_USABLE_ITEMS)
                 .addOptionalTag(SlingshotItemTags.ALWAYS_USABLE_ITEMS)
                 .addOptionalTag(ItemTags.FURNACE_MINECART_FUEL)
+                .addOptionalTag(ItemTags.AXES)
+                .add(Items.IRON_INGOT)
         ;
 
         this.valueLookupBuilder(SlingshotItemTags.ENCHANTMENT_USABLE_ITEMS)
@@ -82,12 +85,6 @@ class ItemTagsProvider extends FabricTagProvider.ItemTagProvider {
                 .add(Items.SLIME_BLOCK)
                 .add(Items.MAGMA_CREAM);
 
-        this.valueLookupBuilder(SlingshotItemTags.HIGH_PROJECTILE_DAMAGE)
-                .addOptionalTag(ItemTags.ANVIL)
-                .add(Items.HEAVY_CORE)
-                .add(Items.NETHER_STAR)
-        ;
-
         this.valueLookupBuilder(SlingshotItemTags.ROTATE_LIKE_ITEM_ROD)
                 .addOptionalTag(ConventionalItemTags.RODS)
                 .addOptionalTag(ItemTags.SHOVELS)
@@ -98,6 +95,12 @@ class ItemTagsProvider extends FabricTagProvider.ItemTagProvider {
         this.valueLookupBuilder(SlingshotItemTags.ROTATE_LIKE_BLOCK_ROD)
                 .add(Items.END_ROD)
                 .add(Items.LIGHTNING_ROD)
+        ;
+
+        this.valueLookupBuilder(SlingshotItemTags.HIGH_PROJECTILE_DAMAGE)
+                .addOptionalTag(ItemTags.ANVIL)
+                .add(Items.HEAVY_CORE)
+                .add(Items.NETHER_STAR)
         ;
 
         this.valueLookupBuilder(SlingshotItemTags.MEDIUM_PROJECTILE_DAMAGE)

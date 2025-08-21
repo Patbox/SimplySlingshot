@@ -5,10 +5,12 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "EnchantmentAccessor",
+    "FireworkRocketEntityAccessor",
     "LivingEntityAccessor",
     "NoteBlockAccessor",
     "ProjectileEntityMixin",
     "RangedWeaponItemMixin",
+    "Schema1460Mixin",
     "ServerPlayNetworkHandlerMixin",
     "ServerWorldMixin"
   ],

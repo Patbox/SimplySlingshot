@@ -1,5 +1,6 @@
 package eu.pb4.slingshot.mixin;
 
+import eu.pb4.slingshot.SlingshotEvents;
 import eu.pb4.slingshot.util.BounceableExt;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -53,6 +54,7 @@ public abstract class ProjectileEntityMixin extends Entity implements Bounceable
     @Inject(method = "hitOrDeflect", at = @At("HEAD"), cancellable = true)
     private void handleBounce(HitResult hitResult, CallbackInfoReturnable<ProjectileDeflection> cir) {
         if (hitResult instanceof BlockHitResult result && this.bounces-- > 0) {
+            var old = this.getVelocity();
             this.setVelocity(this.getVelocity().multiply(
                     result.getSide().getAxis().choose(-1, 1, 1),
                     result.getSide().getAxis().choose(1, -1, 1),
@@ -62,6 +64,7 @@ public abstract class ProjectileEntityMixin extends Entity implements Bounceable
             this.velocityDirty = true;
             this.playSound(SoundEvents.BLOCK_SLIME_BLOCK_FALL, 1, 1);
             this.onBouncedOff(result);
+            SlingshotEvents.ON_BOUNCE.invoker().onBounce((ProjectileEntity) (Object) this, old, hitResult);
             cir.setReturnValue(ProjectileDeflection.SIMPLE);
         }
     }

@@ -15,24 +15,29 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.TypeFilter;
+import net.minecraft.util.Util;
 import net.minecraft.util.function.LazyIterationConsumer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.ChunkManager;
+import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.chunk.*;
+import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.explosion.ExplosionBehavior;
+import net.minecraft.world.gen.chunk.BlendingData;
+import net.minecraft.world.tick.ChunkTickScheduler;
 import net.minecraft.world.tick.OrderedTick;
 import net.minecraft.world.tick.QueryableTickScheduler;
 import net.minecraft.world.tick.TickManager;
@@ -41,11 +46,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 public class MirrorWorld extends World {
     private final World world;
-    private final FakeChunkManager chunkManager = new FakeChunkManager(this);
+    private final MirrorChunkManager chunkManager = new MirrorChunkManager();
 
     public MirrorWorld(World world) {
         super((MutableWorldProperties) world.getLevelProperties(), world.getRegistryKey(), world.getRegistryManager(), world.getDimensionEntry(), world.isClient(), world.isDebugWorld(), 0, 0);
@@ -86,6 +92,7 @@ public class MirrorWorld extends World {
     public RegistryEntry<Biome> getBiome(BlockPos pos) {
         return this.world.getBiome(pos);
     }
+
 
     @Override
     public void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags) {
@@ -281,5 +288,137 @@ public class MirrorWorld extends World {
 
     public interface Provider {
         MirrorWorld slingshot$getMirror();
+    }
+
+    private class MirrorChunk extends WorldChunk {
+        private final Chunk chunk;
+
+        public MirrorChunk(Chunk chunk) {
+            super(MirrorWorld.this, chunk.getPos(), UpgradeData.NO_UPGRADE_DATA,
+                    new ChunkTickScheduler<>(), new ChunkTickScheduler<>(), 0L,
+                    Util.make(new ChunkSection[chunk.getSectionArray().length], arr -> {
+                        for (var i = 0; i < chunk.getSectionArray().length; i++) {
+                            arr[i] = new MirrorChunkSection(chunk, i);
+                        }
+                    }), (EntityLoader)null, (BlendingData)null);
+            this.chunk = chunk;
+        }
+
+        @Nullable
+        @Override
+        public BlockEntity getBlockEntity(BlockPos pos) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public BlockState setBlockState(BlockPos pos, BlockState state, int flags) {
+            return this.chunk.getBlockState(pos);
+        }
+
+        @Override
+        public void setHeightmap(Heightmap.Type type, long[] heightmap) {}
+
+        @Override
+        public void setBlockEntity(BlockEntity blockEntity) {}
+
+        @Override
+        public BlockState getBlockState(BlockPos pos) {
+            return this.chunk.getBlockState(pos);
+        }
+
+        @Override
+        public FluidState getFluidState(BlockPos pos) {
+            return this.chunk.getFluidState(pos);
+        }
+
+        @Override
+        public Heightmap getHeightmap(Heightmap.Type type) {
+            return this.chunk.getHeightmap(type);
+        }
+
+
+    }
+
+    private class MirrorChunkSection extends ChunkSection {
+        private final Chunk chunk;
+        private final int index;
+
+        public MirrorChunkSection(Chunk chunk, int i) {
+            super(MirrorWorld.this.getRegistryManager().getOrThrow(RegistryKeys.BIOME));
+            this.chunk = chunk;
+            this.index = i;
+        }
+
+
+        @Override
+        public BlockState getBlockState(int x, int y, int z) {
+            return getRealSection().getBlockState(x, y, z);
+        }
+
+        @Override
+        public FluidState getFluidState(int x, int y, int z) {
+            return getRealSection().getFluidState(x, y, z);
+        }
+
+        @Override
+        public BlockState setBlockState(int x, int y, int z, BlockState state) {
+            return getRealSection().getBlockState(x, y, z);
+        }
+
+        @Override
+        public BlockState setBlockState(int x, int y, int z, BlockState state, boolean lock) {
+            return getRealSection().getBlockState(x, y, z);
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return getRealSection().isEmpty();
+        }
+
+        @Override
+        public void calculateCounts() {
+
+        }
+
+        private ChunkSection getRealSection() {
+            return this.chunk.getSectionArray()[index];
+        }
+    }
+
+    private class MirrorChunkManager extends ChunkManager {
+        final MirrorChunk empty = new MirrorChunk(new EmptyChunk(MirrorWorld.this, ChunkPos.ORIGIN, MirrorWorld.this.getRegistryManager().getEntryOrThrow(BiomeKeys.PLAINS)));
+
+        @Nullable
+        @Override
+        public Chunk getChunk(int x, int z, ChunkStatus leastStatus, boolean create) {
+            var chunk = MirrorWorld.this.world.getChunkManager().getChunk(x, z, leastStatus, false);
+            return chunk != null ? new MirrorChunk(chunk) : (create ? empty : null);
+        }
+
+        @Override
+        public void tick(BooleanSupplier shouldKeepTicking, boolean tickChunks) {
+
+        }
+
+        @Override
+        public String getDebugString() {
+            return "";
+        }
+
+        @Override
+        public int getLoadedChunkCount() {
+            return MirrorWorld.this.world.getChunkManager().getLoadedChunkCount();
+        }
+
+        @Override
+        public LightingProvider getLightingProvider() {
+            return MirrorWorld.this.world.getLightingProvider();
+        }
+
+        @Override
+        public BlockView getWorld() {
+            return MirrorWorld.this;
+        }
     }
 }

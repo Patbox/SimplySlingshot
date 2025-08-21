@@ -16,6 +16,10 @@ public class SlingshotEntities {
             = register("item_projectile", EntityType.Builder.create(ItemProjectileEntity::new, SpawnGroup.MISC)
             .maxTrackingRange(5).trackingTickInterval(1).dimensions(0.5f, 0.5f));
 
+    public static final EntityType<FakeProjectileEntity> FAKE_PROJECTILE
+            = register("fake_projectile", EntityType.Builder.create(FakeProjectileEntity::new, SpawnGroup.MISC)
+            .maxTrackingRange(0).trackingTickInterval(1).dimensions(0.1f, 0.1f));
+
     public static void register() {
     }
 
