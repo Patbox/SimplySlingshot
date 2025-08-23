@@ -4,10 +4,10 @@
 
   "enchantment.slingshot.bounce": "Рикошет",
   "enchantment.slingshot.block_placer": "Розміщення блоків",
-  "enchantment.slingshot.tool_user": "Користувач інструменту",
+  "enchantment.slingshot.tool_user": "Користувач інструмента",
   "enchantment.slingshot.trajectory_prediction": "Передбачення траєкторії",
   "enchantment.slingshot.boomerang": "Бумеранг",
-  "enchantment.slingshot.item_sender": "Відправник предмета",
+  "enchantment.slingshot.item_sender": "Відправка предмета",
 
   "subtitles.slingshot.entity.slingshot.shoot": "Снаряд запалено",
   "subtitles.slingshot.entity.slingshot.load": "Рогатка натягується",
