@@ -1,0 +1,12 @@
+{
+  "item.slingshot.slingshot": "Proca",
+  "item.slingshot.pebble": "Kamyk",
+  "enchantment.slingshot.bounce": "Odbicie",
+  "enchantment.slingshot.block_placer": "Budowa bloków",
+  "enchantment.slingshot.tool_user": "Użycie narzędzi",
+  "enchantment.slingshot.trajectory_prediction": "Przewidywanie trajektorii",
+  "enchantment.slingshot.boomerang": "Bumerang",
+  "enchantment.slingshot.item_sender": "Wysyłacz przedmiotów",
+  "subtitles.slingshot.entity.slingshot.shoot": "Pocisk wystrzelony",
+  "subtitles.slingshot.entity.slingshot.load": "Proca naciąga się"
+}
