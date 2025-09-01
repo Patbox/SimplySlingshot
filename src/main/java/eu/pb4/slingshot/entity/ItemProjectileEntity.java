@@ -7,6 +7,7 @@ import eu.pb4.polymer.virtualentity.api.tracker.EntityTrackedData;
 import eu.pb4.slingshot.SlingshotEvents;
 import eu.pb4.slingshot.block.SlingshotBlockTags;
 import eu.pb4.slingshot.item.SlingshotDataComponentTags;
+import eu.pb4.slingshot.item.SlingshotDataComponents;
 import eu.pb4.slingshot.item.SlingshotItemTags;
 import eu.pb4.slingshot.item.ench.SlingshotEnchantmentComponents;
 import eu.pb4.slingshot.mixin.FireworkRocketEntityAccessor;
@@ -31,7 +32,6 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.attribute.DefaultAttributeRegistry;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -252,8 +252,10 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
             }
         }
 
+        var baseDamage = this.weapon.getOrDefault(SlingshotDataComponents.SLINGSHOT_WEAPON_DAMAGE, 1.25f);
+        var baseKnockback = this.weapon.getOrDefault(SlingshotDataComponents.SLINGSHOT_WEAPON_DAMAGE, 0f);
         double damage;
-        double knockback = 0d;
+        double knockback = this.stack.getOrDefault(SlingshotDataComponents.SLINGSHOT_PROJECTILE_KNOCKBACK_BONUS, 0f) + baseKnockback;
         if (this.stack.hasEnchantments() || !this.stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT).modifiers().isEmpty()) {
             var attr = new AttributeContainer(DefaultAttributeRegistry.get(EntityType.PLAYER));
             attr.getCustomInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(0);
@@ -263,19 +265,20 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
             }));
 
             damage = attr.getValue(EntityAttributes.ATTACK_DAMAGE) / 1.5 * this.getVelocity().length();
-            knockback = attr.getValue(EntityAttributes.ATTACK_KNOCKBACK) / 2;
+            knockback = attr.getValue(EntityAttributes.ATTACK_KNOCKBACK) / 2 + baseKnockback;
         } else if (this.stack.isIn(SlingshotItemTags.HIGH_PROJECTILE_DAMAGE)) {
-            damage = 4.5 * this.getVelocity().length();
-            knockback = 2;
+            damage = baseDamage * 3.6 * this.getVelocity().length();
+            knockback = 2 + baseKnockback;
         } else if (this.stack.isIn(SlingshotItemTags.MEDIUM_PROJECTILE_DAMAGE)) {
-            damage = 2.25 * this.getVelocity().length();
+            damage = baseDamage * 1.8 * this.getVelocity().length();
         } else if (this.stack.isIn(SlingshotItemTags.LOW_PROJECTILE_DAMAGE)) {
-            damage = 0.5 * this.getVelocity().length();
+            damage = baseDamage * 0.4 * this.getVelocity().length();
         } else {
-            damage = 1.25 * this.getVelocity().length();
+            damage = baseDamage * this.getVelocity().length();
         }
         var source = this.getWorld().getDamageSources().mobProjectile(this, this.getOwner() instanceof LivingEntity owner ? owner : null);
 
+        damage += this.stack.getOrDefault(SlingshotDataComponents.SLINGSHOT_PROJECTILE_DAMAGE_BONUS, 0f);
         damage = EnchantmentHelper.getDamage(world, this.weapon, entity, source, (float) damage);
 
         if (damage > 0) {
@@ -671,13 +674,16 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
         var rotation = new Quaternionf();
 
-        if (this.stack.isIn(SlingshotItemTags.ROTATE_LIKE_ITEM_ROD) && this.allowSideEffects) {
+        if (this.allowSideEffects && this.stack.isIn(SlingshotItemTags.ROTATE_ON_Y_AXIS)) {
             rotation.rotateX(MathHelper.HALF_PI);
             rotation.rotateY(this.roll);
-            rotation.rotateZ(-MathHelper.HALF_PI / 2);
-        } else if (this.stack.isIn(SlingshotItemTags.ROTATE_LIKE_BLOCK_ROD) && this.allowSideEffects) {
-            rotation.rotateX(MathHelper.HALF_PI);
-            rotation.rotateY(this.roll);
+            if (this.stack.isIn(SlingshotItemTags.ROTATE_ON_Y_AXIS_45_DEG)) {
+                rotation.rotateZ(-MathHelper.HALF_PI / 2);
+            } else if (this.stack.isIn(SlingshotItemTags.ROTATE_ON_Y_AXIS_N45_DEG)) {
+                rotation.rotateZ(MathHelper.HALF_PI / 2);
+            } else if (this.stack.isIn(SlingshotItemTags.ROTATE_ON_Y_AXIS_180_DEG)) {
+                rotation.rotateZ(MathHelper.PI);
+            }
         } else {
             rotation.rotateX(this.roll);
         }

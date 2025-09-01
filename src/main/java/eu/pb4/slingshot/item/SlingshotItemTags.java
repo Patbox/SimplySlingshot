@@ -15,8 +15,10 @@ public class SlingshotItemTags {
     public static final TagKey<Item> LOW_PROJECTILE_DAMAGE = of("low_projectile_damage");
     public static final TagKey<Item> MEDIUM_PROJECTILE_DAMAGE = of("medium_projectile_damage");
     public static final TagKey<Item> HIGH_PROJECTILE_DAMAGE = of("high_projectile_damage");
-    public static final TagKey<Item> ROTATE_LIKE_ITEM_ROD = of("rotate_like_item_rod");
-    public static final TagKey<Item> ROTATE_LIKE_BLOCK_ROD = of("rotate_like_block_rod");
+    public static final TagKey<Item> ROTATE_ON_Y_AXIS_45_DEG = of("rotate_on_y_axis_45_deg");
+    public static final TagKey<Item> ROTATE_ON_Y_AXIS_N45_DEG = of("rotate_on_y_axis_n45_deg");
+    public static final TagKey<Item> ROTATE_ON_Y_AXIS_180_DEG = of("rotate_on_y_axis_180_deg");
+    public static final TagKey<Item> ROTATE_ON_Y_AXIS = of("rotate_on_y_axis");
     public static final TagKey<Item> EXTRA_PROJECTILE_SPEED = of("extra_projectile_speed");
 
     private static TagKey<Item> of(String path) {

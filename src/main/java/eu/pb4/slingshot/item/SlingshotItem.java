@@ -1,5 +1,6 @@
 package eu.pb4.slingshot.item;
 
+import com.google.common.base.Predicates;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.slingshot.ModInit;
 import eu.pb4.slingshot.SlingshotEvents;
@@ -25,6 +26,7 @@ import net.minecraft.item.*;
 import net.minecraft.item.consume.UseAction;
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket;
 import net.minecraft.particle.TrailParticleEffect;
+import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -204,10 +206,11 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
         }
     }
 
-    public ProjectileStack getProjectileTypeSource(PlayerEntity player, ItemStack stack, Hand hand) {
+    public ProjectileStack getProjectileTypeSource(PlayerEntity player, ItemStack weapon, Hand hand) {
+        var predicate = weapon.getOrDefault(SlingshotDataComponents.SLINGSHOT_PROJECTILE_CHECK, Predicates.<ItemStack>alwaysTrue());
         if (hand == Hand.OFF_HAND) {
             var itemStack = player.getMainHandStack();
-            if (!itemStack.isEmpty()) {
+            if (!itemStack.isEmpty() && predicate.test(itemStack)) {
                 return new ProjectileStack(itemStack, player.getInventory().getSelectedSlot());
             }
 
@@ -220,7 +223,7 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
 
         } else {
             var itemStack = player.getOffHandStack();
-            if (!itemStack.isEmpty() && itemStack != stack) {
+            if (!itemStack.isEmpty() && itemStack != weapon && predicate.test(itemStack)) {
                 return new ProjectileStack(itemStack, -2);
             }
 
@@ -247,13 +250,24 @@ public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
 
         for (int i = 0; i < 9; i++) {
             var itemStack = player.getInventory().getStack(i);
-            if (!itemStack.isEmpty() && itemStack != stack) {
+            if (!itemStack.isEmpty() && itemStack != weapon && predicate.test(itemStack)) {
                 return new ProjectileStack(itemStack, i);
             }
         }
 
         if (player.isCreative()) {
-            return new ProjectileStack(SlingshotItems.PEBBLE.getDefaultStack(), -1);
+            var stack = SlingshotItems.PEBBLE.getDefaultStack();
+            if (predicate instanceof ItemPredicate itemPredicate) {
+                if (itemPredicate.items().isPresent()) {
+                    var random = itemPredicate.items().get().getRandom(player.getRandom());
+                    if (random.isPresent()) {
+                        stack = random.get().value().getDefaultStack();
+                    }
+                }
+                stack.applyChanges(itemPredicate.components().exact().toChanges());
+            }
+
+            return new ProjectileStack(stack, -1);
         }
 
         return ProjectileStack.EMPTY;

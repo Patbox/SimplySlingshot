@@ -16,7 +16,14 @@ import java.util.function.Function;
 
 public class SlingshotItems {
 
-    public static final SlingshotItem SLINGSHOT = register("slingshot", (settings) -> new SlingshotItem(settings.maxDamage(340).enchantable(3).repairable(Items.STRING)));
+    public static final SlingshotItem SLINGSHOT = register("slingshot", (settings) -> new SlingshotItem(
+            settings.maxDamage(340)
+                    .enchantable(3)
+                    .repairable(Items.STRING)
+                    .component(SlingshotDataComponents.SLINGSHOT_WEAPON_DAMAGE, 1.25f)
+                    .component(SlingshotDataComponents.SLINGSHOT_WEAPON_KNOCKBACK_BONUS, 0f)
+
+    ));
 
     public static final Item PEBBLE = register("pebble", SimplePolymerItem::new);
 

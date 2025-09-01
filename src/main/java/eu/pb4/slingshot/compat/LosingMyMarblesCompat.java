@@ -1,5 +1,6 @@
 package eu.pb4.slingshot.compat;
 
+import eu.pb4.slingshot.ModInit;
 import eu.pb4.slingshot.SlingshotEvents;
 import eu.pb4.slingshot.entity.FakeProjectileEntity;
 import net.minecraft.entity.LivingEntity;
@@ -8,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import one.devos.nautical.losing_my_marbles.content.LosingMyMarblesDataComponents;
+import one.devos.nautical.losing_my_marbles.content.LosingMyMarblesEntities;
 import one.devos.nautical.losing_my_marbles.content.LosingMyMarblesItems;
 import one.devos.nautical.losing_my_marbles.content.marble.MarbleEntity;
 import one.devos.nautical.losing_my_marbles.content.marble.StoredMarble;
@@ -20,14 +22,23 @@ public record LosingMyMarblesCompat() implements SlingshotEvents.CreateProjectil
 
     @Override
     public @Nullable ProjectileEntity createProjectileEntity(World world, Vec3d pos, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack) {
-        if (projectileStack.isOf(LosingMyMarblesItems.MARBLE)) {
-            StoredMarble marble = projectileStack.get(LosingMyMarblesDataComponents.MARBLE);
-            if (marble == null) {
-                return null;
-            } else {
-                var instance = marble.get(world.getRegistryManager());
-                return instance.map(marbleInstance -> FakeProjectileEntity.wrap(world, pos, new MarbleEntity(world, marbleInstance, shooter))).orElse(null);
+        try {
+            if (projectileStack.isOf(LosingMyMarblesItems.MARBLE)) {
+                StoredMarble marble = projectileStack.get(LosingMyMarblesDataComponents.MARBLE);
+                if (marble == null) {
+                    return null;
+                } else {
+                    var instance = marble.get(world.getRegistryManager());
+                    if (instance.isEmpty()) {
+                        return null;
+                    }
+                    var marbleEntity = new MarbleEntity(LosingMyMarblesEntities.MARBLE, world, instance.orElseThrow());
+                    marbleEntity.setOwner(shooter);
+                    return instance.map(marbleInstance -> FakeProjectileEntity.wrap(world, pos, marbleEntity)).orElse(null);
+                }
             }
+        } catch (Throwable e) {
+            ModInit.LOGGER.error("Failed to shoot out a marble!", e);
         }
         return null;
     }

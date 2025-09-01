@@ -24,6 +24,9 @@ class ItemTagsProvider extends FabricTagProvider.ItemTagProvider {
         this.valueLookupBuilder(ItemTags.VANISHING_ENCHANTABLE)
                 .add(SlingshotItems.SLINGSHOT);
 
+        this.valueLookupBuilder(ConventionalItemTags.RANGED_WEAPON_TOOLS)
+                .add(SlingshotItems.SLINGSHOT);
+
         this.valueLookupBuilder(SlingshotItemTags.ALWAYS_USABLE_ITEMS)
                 .addOptionalTag(ConventionalItemTags.DYES)
 ;
@@ -85,16 +88,29 @@ class ItemTagsProvider extends FabricTagProvider.ItemTagProvider {
                 .add(Items.SLIME_BLOCK)
                 .add(Items.MAGMA_CREAM);
 
-        this.valueLookupBuilder(SlingshotItemTags.ROTATE_LIKE_ITEM_ROD)
+        this.valueLookupBuilder(SlingshotItemTags.ROTATE_ON_Y_AXIS_45_DEG)
                 .addOptionalTag(ConventionalItemTags.RODS)
-                .addOptionalTag(ItemTags.SHOVELS)
-                .addOptionalTag(ItemTags.SWORDS)
+                .addOptionalTag(ConventionalItemTags.TOOLS)
                 .addOptionalTag(ConventionalItemTags.MACE_TOOLS)
+                .add(Items.AMETHYST_SHARD)
+                .add(Items.BONE)
         ;
 
-        this.valueLookupBuilder(SlingshotItemTags.ROTATE_LIKE_BLOCK_ROD)
+        this.valueLookupBuilder(SlingshotItemTags.ROTATE_ON_Y_AXIS_N45_DEG)
+                .add(Items.PRISMARINE_SHARD)
+                .add(Items.ECHO_SHARD)
+        ;
+
+        this.valueLookupBuilder(SlingshotItemTags.ROTATE_ON_Y_AXIS_180_DEG)
+                .add(Items.POINTED_DRIPSTONE)
+        ;
+
+        this.valueLookupBuilder(SlingshotItemTags.ROTATE_ON_Y_AXIS)
                 .add(Items.END_ROD)
                 .add(Items.LIGHTNING_ROD)
+                .addOptionalTag(SlingshotItemTags.ROTATE_ON_Y_AXIS_45_DEG)
+                .addOptionalTag(SlingshotItemTags.ROTATE_ON_Y_AXIS_N45_DEG)
+                .addOptionalTag(SlingshotItemTags.ROTATE_ON_Y_AXIS_180_DEG)
         ;
 
         this.valueLookupBuilder(SlingshotItemTags.HIGH_PROJECTILE_DAMAGE)
@@ -108,6 +124,10 @@ class ItemTagsProvider extends FabricTagProvider.ItemTagProvider {
                 .addOptionalTag(ConventionalItemTags.RODS)
                 .add(Items.END_ROD)
                 .add(Items.LIGHTNING_ROD)
+                .add(Items.POINTED_DRIPSTONE)
+                .add(Items.AMETHYST_SHARD)
+                .add(Items.PRISMARINE_SHARD)
+                .add(Items.ECHO_SHARD)
                 .addOptionalTag(ConventionalItemTags.OBSIDIANS);
 
         this.valueLookupBuilder(SlingshotItemTags.LOW_PROJECTILE_DAMAGE)
