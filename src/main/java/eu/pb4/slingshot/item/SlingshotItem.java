@@ -34,6 +34,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Style;
+import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
@@ -50,7 +51,7 @@ import java.util.function.Predicate;
 import static eu.pb4.slingshot.ModInit.id;
 
 public class SlingshotItem extends RangedWeaponItem implements PolymerItem {
-    private static final Style HOTBAR_OVERLAY_STYLE = Style.EMPTY.withFont(id("hotbar_overlay")).withShadowColor(0);
+    private static final Style HOTBAR_OVERLAY_STYLE = Style.EMPTY.withFont(new StyleSpriteSource.Font(id("hotbar_overlay"))).withShadowColor(0);
 
     public SlingshotItem(Settings settings) {
         super(settings);

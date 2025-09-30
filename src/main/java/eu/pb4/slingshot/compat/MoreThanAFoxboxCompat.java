@@ -18,8 +18,8 @@ public record MoreThanAFoxboxCompat() implements SlingshotEvents.OnBounce, Sling
     @Override
     public boolean onGenericHit(ItemProjectileEntity projectile, HitResult result) {
         if (projectile.getStack().getItem() instanceof PlushieItem plushieItem) {
-            var sound = plushieItem.getInteractionSound(projectile.getWorld().getRegistryManager(), projectile.getStack());
-            sound.ifPresent(soundEvent -> projectile.getWorld().playSoundFromEntity(null, projectile, soundEvent, SoundCategory.NEUTRAL, 1.0F, 1.0F));
+            var sound = plushieItem.getInteractionSound(projectile.getEntityWorld().getRegistryManager(), projectile.getStack());
+            sound.ifPresent(soundEvent -> projectile.getEntityWorld().playSoundFromEntity(null, projectile, soundEvent, SoundCategory.NEUTRAL, 1.0F, 1.0F));
         }
         return false;
     }
@@ -27,8 +27,8 @@ public record MoreThanAFoxboxCompat() implements SlingshotEvents.OnBounce, Sling
     @Override
     public void onBounce(ProjectileEntity projectile, Vec3d originalVelocity, HitResult result) {
         if (projectile instanceof FlyingItemEntity entity && entity.getStack().getItem() instanceof PlushieItem plushieItem) {
-            var sound = plushieItem.getInteractionSound(projectile.getWorld().getRegistryManager(), entity.getStack());
-            sound.ifPresent(soundEvent -> projectile.getWorld().playSoundFromEntity(null, projectile, soundEvent, SoundCategory.NEUTRAL, 1.0F, 1.0F));
+            var sound = plushieItem.getInteractionSound(projectile.getEntityWorld().getRegistryManager(), entity.getStack());
+            sound.ifPresent(soundEvent -> projectile.getEntityWorld().playSoundFromEntity(null, projectile, soundEvent, SoundCategory.NEUTRAL, 1.0F, 1.0F));
         }
     }
 }

@@ -69,7 +69,7 @@ class DynRegProvider extends FabricDynamicRegistryProvider {
                 .addNonListEffect(SlingshotEnchantmentComponents.PROJECTILE_FORCE_ITEM, Unit.INSTANCE)
                 .addNonListEffect(SlingshotEnchantmentComponents.PROJECTILE_ITEM_NO_SIDE_EFFECTS, Unit.INSTANCE)
                 .addEffect(EnchantmentEffectComponentTypes.DAMAGE, new SetEnchantmentEffect(EnchantmentLevelBasedValue.constant(0)),
-                        EntityPropertiesLootCondition.builder(LootContext.EntityTarget.DIRECT_ATTACKER,
+                        EntityPropertiesLootCondition.builder(LootContext.EntityReference.DIRECT_ATTACKER,
                                 EntityPredicate.Builder.create().type(wrapperLookup.getOrThrow(RegistryKeys.ENTITY_TYPE), SlingshotEntities.ITEM_PROJECTILE).build()))
                 .addEffect(SlingshotEnchantmentComponents.SLINGSHOT_STRENGTH, new AddEnchantmentEffect(new EnchantmentLevelBasedValue.Constant(0.5f)))
                 .exclusiveSet(wrapperLookup.getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(SlingshotEnchantmentTags.ITEM_SENDER_INCOMPATIBLE))

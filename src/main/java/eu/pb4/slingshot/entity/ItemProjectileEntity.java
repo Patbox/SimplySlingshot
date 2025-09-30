@@ -53,6 +53,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.util.Hand;
+import net.minecraft.util.collection.Pool;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -115,7 +116,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
     }
 
     public void tick() {
-        if (this.getWorld() instanceof ServerWorld world) {
+        if (this.getEntityWorld() instanceof ServerWorld world) {
             if (this.returning > 0) {
                 this.returning--;
                 int speedMult = 1;
@@ -124,7 +125,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
                     return;
                 }
                 var owner = this.getOwner();
-                if (owner instanceof ServerPlayerEntity player && this.getPos().distanceTo(owner.getEyePos()) < owner.getWidth() + 0.25) {
+                if (owner instanceof ServerPlayerEntity player && this.getEntityPos().distanceTo(owner.getEyePos()) < owner.getWidth() + 0.25) {
                     player.networkHandler.sendPacket(new ItemPickupAnimationS2CPacket(this.getId(), player.getId(), 1));
                     player.giveOrDropStack(this.stack);
                     this.discard();
@@ -132,7 +133,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
                 }
 
                 this.noClip = true;
-                Vec3d vec3d = owner.getEyePos().subtract(this.getPos());
+                Vec3d vec3d = owner.getEyePos().subtract(this.getEntityPos());
 
                 double d = 0.025 * (double) speedMult;
                 this.setVelocity(this.getVelocity().multiply(0.95).add(vec3d.normalize().multiply(d)));
@@ -157,7 +158,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
         if (hitResult.getType() != HitResult.Type.MISS) {
             vec3d = hitResult.getPos();
         } else {
-            vec3d = this.getPos().add(this.getVelocity());
+            vec3d = this.getEntityPos().add(this.getVelocity());
         }
 
         this.setPosition(vec3d);
@@ -199,7 +200,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
     @Override
     protected void onEntityHit(EntityHitResult result) {
-        if (!(getWorld() instanceof ServerWorld world)) {
+        if (!(getEntityWorld() instanceof ServerWorld world)) {
             return;
         }
         super.onEntityHit(result);
@@ -276,7 +277,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
         } else {
             damage = baseDamage * this.getVelocity().length();
         }
-        var source = this.getWorld().getDamageSources().mobProjectile(this, this.getOwner() instanceof LivingEntity owner ? owner : null);
+        var source = this.getEntityWorld().getDamageSources().mobProjectile(this, this.getOwner() instanceof LivingEntity owner ? owner : null);
 
         damage += this.stack.getOrDefault(SlingshotDataComponents.SLINGSHOT_PROJECTILE_DAMAGE_BONUS, 0f);
         damage = EnchantmentHelper.getDamage(world, this.weapon, entity, source, (float) damage);
@@ -314,13 +315,13 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
     protected void onBlockHit(BlockHitResult result) {
         super.onBlockHit(result);
 
-        if (!(getWorld() instanceof ServerWorld world)) {
+        if (!(getEntityWorld() instanceof ServerWorld world)) {
             this.discard();
             return;
         }
 
-        var state = this.getWorld().getBlockState(result.getBlockPos());
-        var blockEntity = this.getWorld().getBlockEntity(result.getBlockPos());
+        var state = this.getEntityWorld().getBlockState(result.getBlockPos());
+        var blockEntity = this.getEntityWorld().getBlockEntity(result.getBlockPos());
         if (state.isAir()) {
             this.tryDropSelf(world, Vec3d.ZERO, this.returnOnBlockHit);
             return;
@@ -348,7 +349,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
             if (this.canModifyWorld || this.stack.canPlaceOn(new CachedBlockPosition(world, result.getBlockPos(), false))) {
                 if (this.stack.isOf(Items.BLAZE_ROD)) {
                     var fakePlayer = FakePlayer.get(world);
-                    var itemUsage = new ItemUsageContext(this.getWorld(), fakePlayer, Hand.MAIN_HAND, Items.FIRE_CHARGE.getDefaultStack(), result);
+                    var itemUsage = new ItemUsageContext(this.getEntityWorld(), fakePlayer, Hand.MAIN_HAND, Items.FIRE_CHARGE.getDefaultStack(), result);
                     var action = Items.FIRE_CHARGE.useOnBlock(itemUsage);
                     fakePlayer.getInventory().clear();
                     if (action.isAccepted()) {
@@ -367,7 +368,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
                     fakePlayer.getInventory().clear();
                     fakePlayer.equipStack(EquipmentSlot.MAINHAND, this.stack);
 
-                    var itemUsage = new ItemUsageContext(this.getWorld(), fakePlayer, Hand.MAIN_HAND, this.stack, result);
+                    var itemUsage = new ItemUsageContext(this.getEntityWorld(), fakePlayer, Hand.MAIN_HAND, this.stack, result);
                     var action = this.stack.useOnBlock(itemUsage);
                     if (!action.isAccepted()) {
                         action = state.onUseWithItem(stack, world, fakePlayer, Hand.MAIN_HAND, result);
@@ -375,7 +376,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
                             var abovePos = result.getBlockPos().offset(result.getSide());
                             var aboveState = world.getBlockState(abovePos);
                             if (!aboveState.isAir() && aboveState.getCollisionShape(world, abovePos).isEmpty()) {
-                                itemUsage = new ItemUsageContext(this.getWorld(), fakePlayer, Hand.MAIN_HAND, this.stack, result.withBlockPos(abovePos));
+                                itemUsage = new ItemUsageContext(this.getEntityWorld(), fakePlayer, Hand.MAIN_HAND, this.stack, result.withBlockPos(abovePos));
                                 action = this.stack.useOnBlock(itemUsage);
                                 if (!action.isAccepted()) {
                                     action = state.onUseWithItem(stack, world, fakePlayer, Hand.MAIN_HAND, result.withBlockPos(abovePos));
@@ -419,9 +420,9 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
                     var delta = state.calcBlockBreakingDelta(fake, world, result.getBlockPos()) * speedMult;
                     if (progress != null) {
                         delta += progress.progress();
-                        progress = new TimedMiningProgress(delta, this.getWorld().getTime(), progress.entityId());
+                        progress = new TimedMiningProgress(delta, this.getEntityWorld().getTime(), progress.entityId());
                     } else {
-                        progress = new TimedMiningProgress(delta, this.getWorld().getTime(), this.getId());
+                        progress = new TimedMiningProgress(delta, this.getEntityWorld().getTime(), this.getId());
                     }
 
                     if (delta > 0 && delta < 1) {
@@ -445,11 +446,11 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
     @Override
     public void onBouncedOff(BlockHitResult result) {
-        if (!(this.getWorld() instanceof ServerWorld world)) return;
+        if (!(this.getEntityWorld() instanceof ServerWorld world)) return;
 
-        var state = this.getWorld().getBlockState(result.getBlockPos());
+        var state = this.getEntityWorld().getBlockState(result.getBlockPos());
         if (state.isOf(Blocks.NOTE_BLOCK)) {
-            ((NoteBlockAccessor) state.getBlock()).callPlayNote(this, state, this.getWorld(), result.getBlockPos());
+            ((NoteBlockAccessor) state.getBlock()).callPlayNote(this, state, this.getEntityWorld(), result.getBlockPos());
         }
         if (this.stack.isOf(Items.NOTE_BLOCK)) {
             var note = this.getRandom().nextInt(24);
@@ -513,23 +514,25 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
         if (this.stack.getItem() instanceof SpawnEggItem spawnEggItem && this.allowSideEffects) {
             //noinspection unchecked
-            var entityType = (EntityType<Entity>) spawnEggItem.getEntityType(this.getWorld().getRegistryManager(), this.stack);
+            var entityType = (EntityType<Entity>) spawnEggItem.getEntityType(this.stack);
             var callback = EntityType.copier(entity -> {
                 entity.setPosition(result.getPos());
-            }, this.getWorld(), this.stack, this.getOwner() instanceof LivingEntity owner ? owner : null);
+            }, this.getEntityWorld(), this.stack, this.getOwner() instanceof LivingEntity owner ? owner : null);
             var spawned = entityType.spawn(world, callback, BlockPos.ofFloored(result.getPos()), SpawnReason.SPAWN_ITEM_USE, false, false);
             if (spawned != null) {
-                this.getWorld().emitGameEvent(this, GameEvent.ENTITY_PLACE, BlockPos.ofFloored(result.getPos()));
+                this.getEntityWorld().emitGameEvent(this, GameEvent.ENTITY_PLACE, BlockPos.ofFloored(result.getPos()));
                 this.discard();
                 return true;
             }
         }
 
         if (this.stack.isOf(Items.BREEZE_ROD) && this.allowSideEffects) {
+
             world.createExplosion(this, null,
                     new AdvancedExplosionBehavior(true, false, Optional.of(1.5f),
                             Registries.BLOCK.getOptional(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity())),
-                            this.getX(), this.getY(), this.getZ(), 2, false, World.ExplosionSourceType.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE, SoundEvents.ENTITY_WIND_CHARGE_WIND_BURST);
+                            this.getX(), this.getY(), this.getZ(), 2, false, World.ExplosionSourceType.TRIGGER, ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE,
+                    Pool.empty(), SoundEvents.ENTITY_WIND_CHARGE_WIND_BURST);
             this.discard();
             return true;
         }
@@ -543,9 +546,9 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
             while (var1.hasNext()) {
                 BlockPos blockPos = (BlockPos) var1.next();
-                BlockState blockState = this.getWorld().getBlockState(blockPos);
+                BlockState blockState = this.getEntityWorld().getBlockState(blockPos);
                 if (blockState.isOf(Blocks.BUBBLE_COLUMN)) {
-                    blockState.onEntityCollision(this.getWorld(), blockPos, this, EntityCollisionHandler.DUMMY);
+                    blockState.onEntityCollision(this.getEntityWorld(), blockPos, this, EntityCollisionHandler.DUMMY);
                 }
             }
         }
@@ -553,12 +556,12 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
 
     private void applyDrag() {
         Vec3d vec3d = this.getVelocity();
-        Vec3d vec3d2 = this.getPos();
+        Vec3d vec3d2 = this.getEntityPos();
         float g;
         if (this.isTouchingWater()) {
             for (int i = 0; i < 4; ++i) {
                 float f = 0.25F;
-                if (this.getWorld() instanceof ServerWorld serverWorld) {
+                if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
                     serverWorld.spawnParticles(ParticleTypes.BUBBLE, vec3d2.x - vec3d.x * 0.25, vec3d2.y - vec3d.y * 0.25, vec3d2.z - vec3d.z * 0.25, 0, vec3d.x, vec3d.y, vec3d.z, 1);
                 }
             }

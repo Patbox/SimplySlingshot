@@ -27,9 +27,9 @@ public final class FakeProjectileEntity extends ProjectileEntity {
     @Override
     public void tick() {
         if (entity != null) {
-            entity.setPosition(this.getPos());
+            entity.setPosition(this.getEntityPos());
             entity.setVelocity(this.getVelocity());
-            this.getWorld().spawnEntity(entity);
+            this.getEntityWorld().spawnEntity(entity);
         }
         this.discard();
     }
@@ -44,7 +44,7 @@ public final class FakeProjectileEntity extends ProjectileEntity {
     @Override
     protected void readCustomData(ReadView view) {
         super.readCustomData(view);
-        this.entity = EntityType.loadEntityWithPassengers(view, this.getWorld(), SpawnReason.LOAD, x -> x);
+        this.entity = EntityType.loadEntityWithPassengers(view, this.getEntityWorld(), SpawnReason.LOAD, x -> x);
     }
 
     @Override

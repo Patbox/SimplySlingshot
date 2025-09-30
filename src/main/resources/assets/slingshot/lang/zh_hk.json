@@ -1,1 +1,12 @@
-{}
+{
+  "item.slingshot.slingshot": "弹弓",
+  "item.slingshot.pebble": "石子",
+  "enchantment.slingshot.bounce": "发射物弹射",
+  "enchantment.slingshot.block_placer": "方块放置器",
+  "enchantment.slingshot.tool_user": "工具执行器",
+  "enchantment.slingshot.trajectory_prediction": "轨迹预测",
+  "enchantment.slingshot.boomerang": "回旋",
+  "enchantment.slingshot.item_sender": "物品发射器",
+  "subtitles.slingshot.entity.slingshot.shoot": "发射的弹射物",
+  "subtitles.slingshot.entity.slingshot.load": "拉伸的弹弓"
+}

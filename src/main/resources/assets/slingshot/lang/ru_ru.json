@@ -1,1 +1,12 @@
-{}
+{
+  "item.slingshot.slingshot": "Рогатка",
+  "item.slingshot.pebble": "Камушек",
+  "enchantment.slingshot.bounce": "Рикошет",
+  "enchantment.slingshot.block_placer": "Размещение блоков",
+  "enchantment.slingshot.tool_user": "Использование инструмента",
+  "enchantment.slingshot.trajectory_prediction": "Предсказание траектории",
+  "enchantment.slingshot.boomerang": "Бумеранг",
+  "enchantment.slingshot.item_sender": "Отправитель предмета",
+  "subtitles.slingshot.entity.slingshot.shoot": "Снаряд запущен",
+  "subtitles.slingshot.entity.slingshot.load": "Рогатка натягивается"
+}

@@ -45,7 +45,7 @@ public abstract class ProjectileEntityMixin extends Entity implements Bounceable
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void spawnBounceParticles(CallbackInfo ci) {
-        if (this.bounces > 0 && this.age % 4 == 0 && this.getWorld() instanceof ServerWorld world) {
+        if (this.bounces > 0 && this.age % 4 == 0 && this.getEntityWorld() instanceof ServerWorld world) {
             world.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, Blocks.SLIME_BLOCK.getDefaultState()), this.getX(), this.getY(), this.getZ(), 0,
                     this.getRandom().nextFloat() - 0.5, this.getRandom().nextFloat() - 0.5, this.getRandom().nextFloat() - 0.5, 0.1f);
         }

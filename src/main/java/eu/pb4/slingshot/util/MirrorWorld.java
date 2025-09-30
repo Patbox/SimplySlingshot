@@ -12,6 +12,7 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.FuelRegistry;
 import net.minecraft.item.map.MapState;
+import net.minecraft.particle.BlockParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.recipe.RecipeManager;
@@ -23,14 +24,13 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.Util;
+import net.minecraft.util.collection.Pool;
 import net.minecraft.util.function.LazyIterationConsumer;
 import net.minecraft.util.math.*;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.MutableWorldProperties;
-import net.minecraft.world.World;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.*;
 import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.entity.EntityLookup;
@@ -74,6 +74,16 @@ public class MirrorWorld extends World {
     }
 
     @Override
+    public void setSpawnPoint(WorldProperties.SpawnPoint spawnPoint) {
+
+    }
+
+    @Override
+    public WorldProperties.SpawnPoint getSpawnPoint() {
+        return this.world.getSpawnPoint();
+    }
+
+    @Override
     public BlockState getBlockState(BlockPos pos) {
         return this.world.getBlockState(pos);
     }
@@ -108,7 +118,8 @@ public class MirrorWorld extends World {
     }
 
     @Override
-    public void createExplosion(@Nullable Entity entity, @Nullable DamageSource damageSource, @Nullable ExplosionBehavior behavior, double x, double y, double z, float power, boolean createFire, ExplosionSourceType explosionSourceType, ParticleEffect smallParticle, ParticleEffect largeParticle, RegistryEntry<SoundEvent> soundEvent) {
+    public void createExplosion(@Nullable Entity entity, @Nullable DamageSource damageSource, @Nullable ExplosionBehavior behavior, double x, double y, double z, float power, boolean createFire, ExplosionSourceType explosionSourceType, ParticleEffect smallParticle, ParticleEffect largeParticle, Pool<BlockParticleEffect> blockParticles, RegistryEntry<SoundEvent> soundEvent) {
+
     }
 
     @Override
@@ -286,6 +297,11 @@ public class MirrorWorld extends World {
         };
     }
 
+    @Override
+    public WorldBorder getWorldBorder() {
+        return this.world.getWorldBorder();
+    }
+
     public interface Provider {
         MirrorWorld slingshot$getMirror();
     }
@@ -345,7 +361,7 @@ public class MirrorWorld extends World {
         private final int index;
 
         public MirrorChunkSection(Chunk chunk, int i) {
-            super(MirrorWorld.this.getRegistryManager().getOrThrow(RegistryKeys.BIOME));
+            super(MirrorWorld.this.getPalettesFactory());
             this.chunk = chunk;
             this.index = i;
         }
