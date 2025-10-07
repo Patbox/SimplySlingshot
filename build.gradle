@@ -73,11 +73,11 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation 'eu.pb4:polymer-core:0.14.0-rc.2+1.21.9-rc1'
-	modImplementation 'eu.pb4:polymer-resource-pack:0.14.0-rc.2+1.21.9-rc1'
-	modImplementation 'eu.pb4:polymer-resource-pack-extras:0.14.0-rc.2+1.21.9-rc1'
-	modImplementation 'eu.pb4:polymer-autohost:0.14.0-rc.2+1.21.9-rc1'
-	modImplementation 'eu.pb4:polymer-virtual-entity:0.14.0-rc.2+1.21.9-rc1'
+	modImplementation 'eu.pb4:polymer-core:0.14.2+1.21.9'
+	modImplementation 'eu.pb4:polymer-resource-pack:0.14.2+1.21.9'
+	modImplementation 'eu.pb4:polymer-resource-pack-extras:0.14.2+1.21.9'
+	modImplementation 'eu.pb4:polymer-autohost:0.14.2+1.21.9'
+	modImplementation 'eu.pb4:polymer-virtual-entity:0.14.2+1.21.9'
 	modImplementation include('eu.pb4:common-protection-api:1.0.0')
 
 	modCompileOnly 'maven.modrinth:losing-my-marbles:0.1.0+build.180-mc1.21.8-fabric'

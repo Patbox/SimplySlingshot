@@ -548,7 +548,7 @@ public class ItemProjectileEntity extends ProjectileEntity implements PolymerEnt
                 BlockPos blockPos = (BlockPos) var1.next();
                 BlockState blockState = this.getEntityWorld().getBlockState(blockPos);
                 if (blockState.isOf(Blocks.BUBBLE_COLUMN)) {
-                    blockState.onEntityCollision(this.getEntityWorld(), blockPos, this, EntityCollisionHandler.DUMMY);
+                    blockState.onEntityCollision(this.getEntityWorld(), blockPos, this, EntityCollisionHandler.DUMMY, true);
                 }
             }
         }

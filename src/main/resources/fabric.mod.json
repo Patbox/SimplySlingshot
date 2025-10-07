@@ -32,7 +32,7 @@
   "depends": {
     "fabricloader": ">=0.16.0",
     "fabric-api": "*",
-    "minecraft": ">=1.21.7-",
+    "minecraft": ">=1.21.10-",
     "polymer-core": ">=0.9.10-",
     "polymer-resource-pack": ">=0.9.10-",
     "polymer-virtual-entity": ">=0.9.10-",
