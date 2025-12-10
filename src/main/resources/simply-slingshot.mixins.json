@@ -4,15 +4,14 @@
   "package": "eu.pb4.slingshot.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "EnchantmentAccessor",
     "FireworkRocketEntityAccessor",
     "LivingEntityAccessor",
     "NoteBlockAccessor",
-    "ProjectileEntityMixin",
-    "RangedWeaponItemMixin",
-    "Schema1460Mixin",
-    "ServerPlayNetworkHandlerMixin",
-    "ServerWorldMixin"
+    "ProjectileMixin",
+    "ProjectileWeaponItemMixin",
+    "V1460Mixin",
+    "ServerGamePacketListenerImplMixin",
+    "ServerLevelMixin"
   ],
   "client": [
   ],

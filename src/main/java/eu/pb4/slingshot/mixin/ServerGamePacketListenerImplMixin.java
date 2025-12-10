@@ -1,9 +1,9 @@
 package eu.pb4.slingshot.mixin;
 
 import eu.pb4.slingshot.util.NetHandlerExt;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -11,10 +11,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerPlayNetworkHandler.class)
-public class ServerPlayNetworkHandlerMixin implements NetHandlerExt {
+@Mixin(ServerGamePacketListenerImpl.class)
+public class ServerGamePacketListenerImplMixin implements NetHandlerExt {
 
-    @Shadow public ServerPlayerEntity player;
+    @Shadow public ServerPlayer player;
     @Unique
     private int hasSelection = -1;
 
@@ -25,9 +25,9 @@ public class ServerPlayNetworkHandlerMixin implements NetHandlerExt {
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void clearSelection(CallbackInfo ci) {
-        if (hasSelection != -1 && hasSelection != this.player.age) {
+        if (hasSelection != -1 && hasSelection != this.player.tickCount) {
             hasSelection = -1;
-            this.player.sendMessage(Text.empty(), true);
+            this.player.displayClientMessage(Component.empty(), true);
         }
     }
 }

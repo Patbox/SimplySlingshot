@@ -3,16 +3,16 @@ package eu.pb4.slingshot;
 import eu.pb4.slingshot.entity.ItemProjectileEntity;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -106,16 +106,16 @@ public interface SlingshotEvents {
 
     interface CreateProjectile {
         @Nullable
-        ProjectileEntity createProjectileEntity(World world, Vec3d pos, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack);
+        Projectile createProjectileEntity(Level world, Vec3 pos, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack);
     }
 
     interface ProjectileProvider {
         @Nullable
-        List<ItemStack> getProjectilesFrom(ItemStack weapon, ItemStack projectileSource, PlayerEntity player, boolean consume);
+        List<ItemStack> getProjectilesFrom(ItemStack weapon, ItemStack projectileSource, Player player, boolean consume);
     }
 
     interface Shoot {
-        void onShoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target);
+        void onShoot(LivingEntity shooter, Projectile projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target);
     }
 
     interface ItemProjectileBlockHit {
@@ -131,10 +131,10 @@ public interface SlingshotEvents {
     }
 
     interface ItemProjectileTryDropSelf {
-        boolean onTryDropSelf(ItemProjectileEntity projectile, ServerWorld world, Vec3d offset, boolean shouldReturn);
+        boolean onTryDropSelf(ItemProjectileEntity projectile, ServerLevel world, Vec3 offset, boolean shouldReturn);
     }
 
     interface OnBounce {
-        void onBounce(ProjectileEntity projectile, Vec3d originalVelocity, HitResult result);
+        void onBounce(Projectile projectile, Vec3 originalVelocity, HitResult result);
     }
 }

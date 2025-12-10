@@ -1,31 +1,31 @@
 package eu.pb4.slingshot.entity;
 
 import eu.pb4.slingshot.ModInit;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
 
 public class SlingshotEntities {
     public static final EntityType<ItemProjectileEntity> ITEM_PROJECTILE
-            = register("item_projectile", EntityType.Builder.create(ItemProjectileEntity::new, SpawnGroup.MISC)
-            .maxTrackingRange(5).trackingTickInterval(1).dimensions(0.5f, 0.5f));
+            = register("item_projectile", EntityType.Builder.of(ItemProjectileEntity::new, MobCategory.MISC)
+            .clientTrackingRange(5).updateInterval(1).sized(0.5f, 0.5f));
 
     public static final EntityType<FakeProjectileEntity> FAKE_PROJECTILE
-            = register("fake_projectile", EntityType.Builder.create(FakeProjectileEntity::new, SpawnGroup.MISC)
-            .maxTrackingRange(0).trackingTickInterval(1).dimensions(0.1f, 0.1f));
+            = register("fake_projectile", EntityType.Builder.of(FakeProjectileEntity::new, MobCategory.MISC)
+            .clientTrackingRange(0).updateInterval(1).sized(0.1f, 0.1f));
 
     public static void register() {
     }
 
     public static <T extends Entity> EntityType<T> register(String path, EntityType.Builder<T> item) {
-        var id = Identifier.of(ModInit.ID, path);
-        var x = Registry.register(Registries.ENTITY_TYPE, id, item.build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, id)));
+        var id = Identifier.fromNamespaceAndPath(ModInit.ID, path);
+        var x = Registry.register(BuiltInRegistries.ENTITY_TYPE, id, item.build(ResourceKey.create(Registries.ENTITY_TYPE, id)));
         PolymerEntityUtils.registerType(x);
         return x;
     }

@@ -5,43 +5,43 @@ import eu.pb4.slingshot.item.SlingshotItems;
 import eu.pb4.slingshot.util.BounceableExt;
 import net.fabricmc.fabric.api.item.v1.EnchantmentEvents;
 import net.fabricmc.fabric.api.util.TriState;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
 public class SlingshotEnchantments {
-    public static final RegistryKey<Enchantment> BOUNCE = of("bounce");
-    public static final RegistryKey<Enchantment> BLOCK_PLACER = of("block_placer");
-    public static final RegistryKey<Enchantment> TOOL_USER = of("tool_user");
-    public static final RegistryKey<Enchantment> TRAJECTORY_PREDICTION = of("trajectory_prediction");
-    public static final RegistryKey<Enchantment> BOOMERANG = of("boomerang");
-    public static final RegistryKey<Enchantment> ITEM_SENDER = of("item_sender");
+    public static final ResourceKey<Enchantment> BOUNCE = of("bounce");
+    public static final ResourceKey<Enchantment> BLOCK_PLACER = of("block_placer");
+    public static final ResourceKey<Enchantment> TOOL_USER = of("tool_user");
+    public static final ResourceKey<Enchantment> TRAJECTORY_PREDICTION = of("trajectory_prediction");
+    public static final ResourceKey<Enchantment> BOOMERANG = of("boomerang");
+    public static final ResourceKey<Enchantment> ITEM_SENDER = of("item_sender");
 
-    private static RegistryKey<Enchantment> of(String path) {
-        return RegistryKey.of(RegistryKeys.ENCHANTMENT, ModInit.id(path));
+    private static ResourceKey<Enchantment> of(String path) {
+        return ResourceKey.create(Registries.ENCHANTMENT, ModInit.id(path));
     }
 
     public static void register() {
         EnchantmentEvents.ALLOW_ENCHANTING.register((enchantment, target, enchantingContext) -> {
-            if (!enchantment.getKey().orElseThrow().equals(Enchantments.QUICK_CHARGE)) return TriState.DEFAULT;
-            return target.isOf(SlingshotItems.SLINGSHOT) ? TriState.TRUE : TriState.DEFAULT;
+            if (!enchantment.unwrapKey().orElseThrow().equals(Enchantments.QUICK_CHARGE)) return TriState.DEFAULT;
+            return target.is(SlingshotItems.SLINGSHOT) ? TriState.TRUE : TriState.DEFAULT;
         });
     }
 
-    public static void setBounces(ItemStack stack, ProjectileEntity projectile) {
+    public static void setBounces(ItemStack stack, Projectile projectile) {
         ((BounceableExt) projectile).slingshot$setBounces(getBounces(stack, ((BounceableExt) projectile).slingshot$getBounces(), projectile.getRandom()));
     }
 
-    public static int getBounces(ItemStack stack, int initial, Random random) {
+    public static int getBounces(ItemStack stack, int initial, RandomSource random) {
         var val = new MutableFloat(initial);
-        for (var ench : EnchantmentHelper.getEnchantments(stack).getEnchantmentEntries()) {
-            ench.getKey().value().modifyValue(SlingshotEnchantmentComponents.PROJECTILE_BOUNCE, random, ench.getIntValue(), val);
+        for (var ench : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()) {
+            ench.getKey().value().modifyUnfilteredValue(SlingshotEnchantmentComponents.PROJECTILE_BOUNCE, random, ench.getIntValue(), val);
         }
         return val.intValue();
     }

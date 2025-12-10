@@ -12,10 +12,9 @@ import eu.pb4.polymer.resourcepack.extras.api.format.item.model.BasicItemModel;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.ConstantTintSource;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.DyeTintSource;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.data.DataOutput;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.DataWriter;
-import net.minecraft.registry.Registries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.util.Util;
 
 import java.io.IOException;
@@ -27,24 +26,24 @@ import java.util.function.BiConsumer;
 import static eu.pb4.slingshot.ModInit.id;
 
 class CustomAssetProvider implements DataProvider {
-    private final DataOutput output;
+    private final PackOutput output;
 
     public CustomAssetProvider(FabricDataOutput output) {
         this.output = output;
     }
 
     @Override
-    public CompletableFuture<?> run(DataWriter writer) {
+    public CompletableFuture<?> run(CachedOutput writer) {
         BiConsumer<String, byte[]> assetWriter = (path, data) -> {
             try {
-                writer.write(this.output.getPath().resolve(path), data, HashCode.fromBytes(data));
+                writer.writeIfNeeded(this.output.getOutputFolder().resolve(path), data, HashCode.fromBytes(data));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         };
         return CompletableFuture.runAsync(() -> {
             writeData(assetWriter);
-        }, Util.getMainWorkerExecutor());
+        }, Util.backgroundExecutor());
     }
 
     private void writeData(BiConsumer<String, byte[]> writer) {

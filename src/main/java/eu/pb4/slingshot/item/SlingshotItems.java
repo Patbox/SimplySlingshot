@@ -3,21 +3,20 @@ package eu.pb4.slingshot.item;
 import eu.pb4.polymer.core.api.item.SimplePolymerItem;
 import eu.pb4.slingshot.ModInit;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import java.util.function.Function;
 
 public class SlingshotItems {
 
     public static final SlingshotItem SLINGSHOT = register("slingshot", (settings) -> new SlingshotItem(
-            settings.maxDamage(340)
+            settings.durability(340)
                     .enchantable(3)
                     .repairable(Items.STRING)
                     .component(SlingshotDataComponents.SLINGSHOT_WEAPON_DAMAGE, 1.25f)
@@ -28,11 +27,11 @@ public class SlingshotItems {
     public static final Item PEBBLE = register("pebble", SimplePolymerItem::new);
 
     public static void register() {
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT).register(entries -> {
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT).register(entries -> {
             entries.addAfter(Items.CROSSBOW, SLINGSHOT);
             entries.addAfter(Items.TIPPED_ARROW, PEBBLE);
         });
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.TOOLS_AND_UTILITIES).register(entries -> {
             entries.addBefore(Items.FISHING_ROD, SLINGSHOT);
         });
 
@@ -61,14 +60,14 @@ public class SlingshotItems {
         );*/
     }
 
-    public static <T extends Item> T register(String path, Item.Settings settings, Function<Item.Settings, T> function) {
-        var id = Identifier.of(ModInit.ID, path);
-        var item = function.apply(settings.registryKey(RegistryKey.of(RegistryKeys.ITEM, id)));
-        Registry.register(Registries.ITEM, id, item);
+    public static <T extends Item> T register(String path, Item.Properties settings, Function<Item.Properties, T> function) {
+        var id = Identifier.fromNamespaceAndPath(ModInit.ID, path);
+        var item = function.apply(settings.setId(ResourceKey.create(Registries.ITEM, id)));
+        Registry.register(BuiltInRegistries.ITEM, id, item);
         return item;
     }
 
-    public static <T extends Item> T register(String path, Function<Item.Settings, T> function) {
-        return register(path, new Item.Settings(), function);
+    public static <T extends Item> T register(String path, Function<Item.Properties, T> function) {
+        return register(path, new Item.Properties(), function);
     }
 }

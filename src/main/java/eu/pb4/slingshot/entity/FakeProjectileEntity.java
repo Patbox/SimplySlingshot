@@ -1,25 +1,25 @@
 package eu.pb4.slingshot.entity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 
-public final class FakeProjectileEntity extends ProjectileEntity {
+public final class FakeProjectileEntity extends Projectile {
     public Entity entity = null;
 
-    public FakeProjectileEntity(EntityType<? extends ProjectileEntity> entityType, World world) {
+    public FakeProjectileEntity(EntityType<? extends Projectile> entityType, Level world) {
         super(entityType, world);
     }
 
-    public static FakeProjectileEntity wrap(World world, Vec3d pos, Entity entity) {
+    public static FakeProjectileEntity wrap(Level world, Vec3 pos, Entity entity) {
         var fake = new FakeProjectileEntity(SlingshotEntities.FAKE_PROJECTILE, world);
-        fake.setPos(pos.getX(), pos.getY(), pos.getZ());
+        fake.setPosRaw(pos.x(), pos.y(), pos.z());
         fake.entity = entity;
         return fake;
     }
@@ -27,26 +27,26 @@ public final class FakeProjectileEntity extends ProjectileEntity {
     @Override
     public void tick() {
         if (entity != null) {
-            entity.setPosition(this.getEntityPos());
-            entity.setVelocity(this.getVelocity());
-            this.getEntityWorld().spawnEntity(entity);
+            entity.setPos(this.position());
+            entity.setDeltaMovement(this.getDeltaMovement());
+            this.level().addFreshEntity(entity);
         }
         this.discard();
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
+    protected void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
         if (this.entity == null) return;
-        this.entity.writeData(view.get("entity"));
+        this.entity.saveWithoutId(view.child("entity"));
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        super.readCustomData(view);
-        this.entity = EntityType.loadEntityWithPassengers(view, this.getEntityWorld(), SpawnReason.LOAD, x -> x);
+    protected void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
+        this.entity = EntityType.loadEntityRecursive(view, this.level(), EntitySpawnReason.LOAD, x -> x);
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {}
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {}
 }

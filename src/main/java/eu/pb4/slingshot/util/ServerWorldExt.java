@@ -1,6 +1,6 @@
 package eu.pb4.slingshot.util;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public interface ServerWorldExt {
     TimedMiningProgress slingshot$getBreakingProgress(BlockPos pos);

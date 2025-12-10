@@ -1,16 +1,8 @@
 package eu.pb4.slingshot.mixin;
 
-import eu.pb4.slingshot.util.MirrorWorld;
+import eu.pb4.slingshot.util.MirrorLevel;
 import eu.pb4.slingshot.util.ServerWorldExt;
 import eu.pb4.slingshot.util.TimedMiningProgress;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.MutableWorldProperties;
-import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,26 +12,34 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.storage.WritableLevelData;
 
-@Mixin(ServerWorld.class)
-public abstract class ServerWorldMixin extends World implements MirrorWorld.Provider, ServerWorldExt {
+@Mixin(ServerLevel.class)
+public abstract class ServerLevelMixin extends Level implements MirrorLevel.Provider, ServerWorldExt {
     @Unique
-    private final MirrorWorld mirrorWorld = new MirrorWorld(this);
+    private final MirrorLevel mirrorWorld = new MirrorLevel(this);
 
     @Unique
     private final Map<BlockPos, TimedMiningProgress> miningProgressMap = new HashMap<>();
 
-    protected ServerWorldMixin(MutableWorldProperties properties, RegistryKey<World> registryRef, DynamicRegistryManager registryManager, RegistryEntry<DimensionType> dimensionEntry, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
+    protected ServerLevelMixin(WritableLevelData properties, ResourceKey<Level> registryRef, RegistryAccess registryManager, Holder<DimensionType> dimensionEntry, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
         super(properties, registryRef, registryManager, dimensionEntry, isClient, debugWorld, seed, maxChainedNeighborUpdates);
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void clearOldSlingshotMining(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-        this.miningProgressMap.values().removeIf(x -> x.time() + 30 * 20 < this.getTime());
+        this.miningProgressMap.values().removeIf(x -> x.time() + 30 * 20 < this.getGameTime());
     }
 
     @Override
-    public MirrorWorld slingshot$getMirror() {
+    public MirrorLevel slingshot$getMirror() {
         return this.mirrorWorld;
     }
 

@@ -1,9 +1,9 @@
 package eu.pb4.slingshot.item;
 
 import eu.pb4.slingshot.ModInit;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 
 public class SlingshotItemTags {
     public static final TagKey<Item> ENCHANTMENT_USABLE_ITEMS = of("enchantment_usable_tools");
@@ -22,6 +22,6 @@ public class SlingshotItemTags {
     public static final TagKey<Item> EXTRA_PROJECTILE_SPEED = of("extra_projectile_speed");
 
     private static TagKey<Item> of(String path) {
-        return TagKey.of(RegistryKeys.ITEM, ModInit.id(path));
+        return TagKey.create(Registries.ITEM, ModInit.id(path));
     }
 }
