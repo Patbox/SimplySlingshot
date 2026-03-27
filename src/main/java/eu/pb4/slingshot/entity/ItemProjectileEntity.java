@@ -2,8 +2,8 @@ package eu.pb4.slingshot.entity;
 
 import eu.pb4.polymer.core.api.entity.PolymerEntity;
 import eu.pb4.polymer.core.api.utils.PolymerUtils;
-import eu.pb4.polymer.virtualentity.api.tracker.DisplayTrackedData;
-import eu.pb4.polymer.virtualentity.api.tracker.EntityTrackedData;
+import eu.pb4.polymer.virtualentity.api.data.DisplayEntityData;
+import eu.pb4.polymer.virtualentity.api.data.EntityData;
 import eu.pb4.slingshot.SlingshotEvents;
 import eu.pb4.slingshot.block.SlingshotBlockTags;
 import eu.pb4.slingshot.item.SlingshotDataComponentTags;
@@ -17,6 +17,7 @@ import eu.pb4.slingshot.util.BounceableExt;
 import eu.pb4.slingshot.util.ServerWorldExt;
 import eu.pb4.slingshot.util.TimedMiningProgress;
 import net.fabricmc.fabric.api.entity.FakePlayer;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -50,10 +51,7 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -77,7 +75,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.Iterator;
 import java.util.List;
@@ -152,7 +149,7 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
                 super.tick();
 
                 this.roll = (float) (this.roll - Math.min(this.getDeltaMovement().length(), Mth.PI * 3 / 4) / 2);
-                this.entityData.set(EntityTrackedData.NO_GRAVITY, this.isNoGravity(), true);
+                this.entityData.set(EntityData.NO_GRAVITY, this.isNoGravity(), true);
                 return;
             } else if (this.returning == 0) {
                 this.tryDropSelf(world, Vec3.ZERO, false);
@@ -181,7 +178,7 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
             }
         }
         this.roll = (float) (this.roll + Math.min(this.getDeltaMovement().length(), Mth.PI * 3 / 4));
-        this.entityData.set(EntityTrackedData.NO_GRAVITY, this.isNoGravity(), true);
+        this.entityData.set(EntityData.NO_GRAVITY, this.isNoGravity(), true);
     }
 
 
@@ -240,7 +237,7 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
                 if (!s.consumesAction()) {
                     this.tryDropSelf(world, Vec3.ZERO, this.returnOnEntityHit);
                 } else {
-                    world.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, this.stack), this.getX(), this.getY(), this.getZ(), 5, 0.1, 0.1, 0.1, 0.2f);
+                    world.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, ItemStackTemplate.fromNonEmptyStack(this.stack)), this.getX(), this.getY(), this.getZ(), 5, 0.1, 0.1, 0.1, 0.2f);
                 }
                 return;
             }
@@ -251,7 +248,7 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
                 var fakePlayer = FakePlayer.get(world);
                 fakePlayer.getInventory().clearContent();
                 fakePlayer.setItemSlot(EquipmentSlot.MAINHAND, this.stack);
-                var action = fakePlayer.interactOn(entity, InteractionHand.MAIN_HAND);
+                var action = fakePlayer.interactOn(entity, InteractionHand.MAIN_HAND, result.getLocation().subtract(result.getEntity().position()));
                 this.stack = fakePlayer.getItemBySlot(EquipmentSlot.MAINHAND);
                 fakePlayer.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                 fakePlayer.getInventory().forEach(stack1 -> this.spawnAtLocation(world, stack1));
@@ -306,7 +303,7 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
             livingEntity.knockback(-knockback, dir.leftDouble(), dir.rightDouble());
         }
 
-        var stackCopy = this.stack.copy();
+        var stackCopy = ItemStackTemplate.fromNonEmptyStack(this.stack);
         this.stack.hurtAndBreak(1, world, null, item -> {
             world.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, stackCopy), this.getX(), this.getY(), this.getZ(), 5, 0.1, 0.1, 0.1, 0.2f);
         });
@@ -678,11 +675,11 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
     @Override
     public void modifyRawTrackedData(List<SynchedEntityData.DataValue<?>> data, ServerPlayer player, boolean initial) {
         if (initial) {
-            data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.TELEPORTATION_DURATION, 2));
-            data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.INTERPOLATION_DURATION, 2));
-            data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.Item.ITEM, this.stack));
+            data.add(SynchedEntityData.DataValue.create(DisplayEntityData.TELEPORTATION_DURATION, 2));
+            data.add(SynchedEntityData.DataValue.create(DisplayEntityData.INTERPOLATION_DURATION, 2));
+            data.add(SynchedEntityData.DataValue.create(DisplayEntityData.Item.ITEM, this.stack));
         } else {
-            data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.START_INTERPOLATION, 0));
+            data.add(SynchedEntityData.DataValue.create(DisplayEntityData.START_INTERPOLATION, 0));
         }
 
         var rotation = new Quaternionf();
@@ -701,8 +698,8 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
             rotation.rotateX(this.roll);
         }
 
-        data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.LEFT_ROTATION, rotation));
-        data.add(SynchedEntityData.DataValue.create(DisplayTrackedData.SCALE, new Vector3f(this.returning == -1 ? 0.55f : 0.35f)));
+        data.add(SynchedEntityData.DataValue.create(DisplayEntityData.LEFT_ROTATION, rotation));
+        data.add(SynchedEntityData.DataValue.create(DisplayEntityData.SCALE, new Vector3f(this.returning == -1 ? 0.55f : 0.35f)));
     }
 
     @Override

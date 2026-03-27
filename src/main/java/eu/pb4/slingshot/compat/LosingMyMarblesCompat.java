@@ -1,5 +1,5 @@
 package eu.pb4.slingshot.compat;
-
+/*
 import eu.pb4.slingshot.ModInit;
 import eu.pb4.slingshot.SlingshotEvents;
 import eu.pb4.slingshot.entity.FakeProjectileEntity;
@@ -43,3 +43,4 @@ public record LosingMyMarblesCompat() implements SlingshotEvents.CreateProjectil
         return null;
     }
 }
+*/

@@ -15,7 +15,8 @@ import java.util.List;
 
 public class SlingshotEnchantmentComponents {
     public static DataComponentType<List<ConditionalEffect<EnchantmentValueEffect>>> SLINGSHOT_STRENGTH = register("slingshot_strength",
-            DataComponentType.<List<ConditionalEffect<EnchantmentValueEffect>>>builder().persistent(ConditionalEffect.codec(EnchantmentValueEffect.CODEC, LootContextParamSets.ENCHANTED_ITEM).listOf()));
+            DataComponentType.<List<ConditionalEffect<EnchantmentValueEffect>>>builder()
+                    .persistent(ConditionalEffect.codec(EnchantmentValueEffect.CODEC).listOf()));
     public static DataComponentType<EnchantmentValueEffect> PROJECTILE_BOUNCE = register("projectile_bounce", DataComponentType.<EnchantmentValueEffect>builder().persistent(EnchantmentValueEffect.CODEC));
     public static DataComponentType<Unit> PROJECTILE_PREDICTION = register("projectile_prediction", DataComponentType.<Unit>builder().persistent(Unit.CODEC));
     public static DataComponentType<Unit> PROJECTILE_BLOCK_PLACER = register("projectile_block_placer", DataComponentType.<Unit>builder().persistent(Unit.CODEC));

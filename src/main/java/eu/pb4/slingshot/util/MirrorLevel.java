@@ -12,6 +12,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.*;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
@@ -212,6 +213,11 @@ public class MirrorLevel extends Level {
     }
 
     @Override
+    public ClockManager clockManager() {
+        return this.world.clockManager();
+    }
+
+    @Override
     public EnvironmentAttributeSystem environmentAttributes() {
         return this.world.environmentAttributes();
     }
@@ -239,11 +245,6 @@ public class MirrorLevel extends Level {
     @Override
     public void gameEvent(Holder<GameEvent> event, Vec3 emitterPos, GameEvent.Context emitter) {
 
-    }
-
-    @Override
-    public float getShade(Direction direction, boolean shaded) {
-        return 0;
     }
 
     @Override

@@ -12,6 +12,7 @@ import eu.pb4.slingshot.util.MirrorLevel;
 import eu.pb4.slingshot.util.NetHandlerExt;
 import eu.pb4.slingshot.util.SlingshotSoundEvents;
 import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.TrailParticleOption;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,19 +35,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
-import net.minecraft.world.item.ArrowItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ProjectileItem;
-import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.packettweaker.PacketContext;
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
 
 import java.util.List;
 import java.util.Objects;
@@ -135,12 +130,12 @@ public class SlingshotItem extends ProjectileWeaponItem implements PolymerItem {
 
         if (projectileStack.slot == -2) {
             if (player.getMainArm() == HumanoidArm.RIGHT) {
-                player.displayClientMessage(Component.literal("-cc" + "a".repeat(11)).setStyle(HOTBAR_OVERLAY_STYLE), true);
+                player.sendSystemMessage(Component.literal("-cc" + "a".repeat(11)).setStyle(HOTBAR_OVERLAY_STYLE), true);
             } else {
-                player.displayClientMessage(Component.literal("a".repeat(11) + "cc-").setStyle(HOTBAR_OVERLAY_STYLE), true);
+                player.sendSystemMessage(Component.literal("a".repeat(11) + "cc-").setStyle(HOTBAR_OVERLAY_STYLE), true);
             }
         } else {
-            player.displayClientMessage(Component.literal("a".repeat(projectileStack.slot) + "-" + "a".repeat(9 - projectileStack.slot - 1)).setStyle(HOTBAR_OVERLAY_STYLE), true);
+            player.sendSystemMessage(Component.literal("a".repeat(projectileStack.slot) + "-" + "a".repeat(9 - projectileStack.slot - 1)).setStyle(HOTBAR_OVERLAY_STYLE), true);
         }
         ((NetHandlerExt) player.connection).slingshot$setSelectionTick(player.tickCount);
     }
@@ -212,7 +207,7 @@ public class SlingshotItem extends ProjectileWeaponItem implements PolymerItem {
     }
 
     public ProjectileStack getProjectileTypeSource(Player player, ItemStack weapon, InteractionHand hand) {
-        var predicate = weapon.getOrDefault(SlingshotDataComponents.SLINGSHOT_PROJECTILE_CHECK, Predicates.<ItemStack>alwaysTrue());
+        var predicate = weapon.getOrDefault(SlingshotDataComponents.SLINGSHOT_PROJECTILE_CHECK, Predicates.<ItemInstance>alwaysTrue());
         if (hand == InteractionHand.OFF_HAND) {
             var itemStack = player.getMainHandItem();
             if (!itemStack.isEmpty() && predicate.test(itemStack)) {
@@ -375,7 +370,7 @@ public class SlingshotItem extends ProjectileWeaponItem implements PolymerItem {
     }
 
     @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
         out.set(DataComponents.CONSUMABLE, new Consumable(getUseDuration(stack, null), ItemUseAnimation.BOW, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY), false, List.of()));
     }
 

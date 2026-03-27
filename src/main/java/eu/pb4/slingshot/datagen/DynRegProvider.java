@@ -5,7 +5,7 @@ import eu.pb4.slingshot.item.ench.SlingshotEnchantmentComponents;
 import eu.pb4.slingshot.item.ench.SlingshotEnchantmentTags;
 import eu.pb4.slingshot.item.ench.SlingshotEnchantments;
 import eu.pb4.slingshot.item.SlingshotItems;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.core.Holder;
@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 class DynRegProvider extends FabricDynamicRegistryProvider {
-    public DynRegProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public DynRegProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);
     }
 

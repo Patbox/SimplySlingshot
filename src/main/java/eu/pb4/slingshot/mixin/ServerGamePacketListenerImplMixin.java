@@ -27,7 +27,7 @@ public class ServerGamePacketListenerImplMixin implements NetHandlerExt {
     private void clearSelection(CallbackInfo ci) {
         if (hasSelection != -1 && hasSelection != this.player.tickCount) {
             hasSelection = -1;
-            this.player.displayClientMessage(Component.empty(), true);
+            this.player.sendSystemMessage(Component.empty(), true);
         }
     }
 }

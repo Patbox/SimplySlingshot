@@ -1,7 +1,6 @@
 package eu.pb4.slingshot;
 
 
-import eu.pb4.slingshot.compat.*;
 import eu.pb4.slingshot.entity.SlingshotEntities;
 import eu.pb4.slingshot.item.ench.SlingshotEnchantmentComponents;
 import eu.pb4.slingshot.item.SlingshotItems;
@@ -48,10 +47,10 @@ public class ModInit implements ModInitializer {
 		PolymerResourcePackUtils.markAsRequired();
 
 		if (FabricLoader.getInstance().isModLoaded("losing_my_marbles")) {
-			new LosingMyMarblesCompat();
+			//new LosingMyMarblesCompat();
 		}
 		if (FabricLoader.getInstance().isModLoaded("more_than_a_foxbox")) {
-			new MoreThanAFoxboxCompat();
+			//new MoreThanAFoxboxCompat();
 		}
 	}
 }

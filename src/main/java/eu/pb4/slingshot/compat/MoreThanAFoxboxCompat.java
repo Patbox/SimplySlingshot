@@ -1,5 +1,5 @@
 package eu.pb4.slingshot.compat;
-
+/*
 import dev.sweetberry.more_than_a_foxbox.item.PlushieItem;
 import eu.pb4.slingshot.SlingshotEvents;
 import eu.pb4.slingshot.entity.ItemProjectileEntity;
@@ -32,3 +32,4 @@ public record MoreThanAFoxboxCompat() implements SlingshotEvents.OnBounce, Sling
         }
     }
 }
+*/

@@ -2,8 +2,8 @@ package eu.pb4.slingshot.datagen;
 
 import eu.pb4.slingshot.item.SlingshotItemTags;
 import eu.pb4.slingshot.item.SlingshotItems;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.ItemTags;
@@ -12,8 +12,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
-class ItemTagsProvider extends FabricTagProvider.ItemTagProvider {
-    public ItemTagsProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture, @Nullable FabricTagProvider.BlockTagProvider blockTagProvider) {
+class ItemTagsProvider extends FabricTagsProvider.ItemTagsProvider {
+    public ItemTagsProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture, @Nullable FabricTagsProvider.BlockTagsProvider blockTagProvider) {
         super(output, registriesFuture, blockTagProvider);
     }
 
@@ -75,7 +75,7 @@ class ItemTagsProvider extends FabricTagProvider.ItemTagProvider {
                 .addOptionalTag(ConventionalItemTags.BRICKS)
                 .addOptionalTag(ConventionalItemTags.COBBLESTONES)
                 .addOptionalTag(ConventionalItemTags.STONES)
-                .addOptionalTag(ConventionalItemTags.SPEAR_TOOLS)
+                .addOptionalTag(ConventionalItemTags.TRIDENT_TOOLS)
                 .addOptionalTag(ItemTags.PICKAXES)
                 .addOptionalTag(ItemTags.SHOVELS)
                 .addOptionalTag(ItemTags.AXES)
