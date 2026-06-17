@@ -2,7 +2,7 @@ package eu.pb4.slingshot.item;
 
 import com.mojang.serialization.Codec;
 import eu.pb4.slingshot.ModInit;
-import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;

@@ -35,12 +35,7 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
@@ -265,7 +260,7 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
         double damage;
         double knockback = this.stack.getOrDefault(SlingshotDataComponents.SLINGSHOT_PROJECTILE_KNOCKBACK_BONUS, 0f) + baseKnockback;
         if (this.stack.isEnchanted() || !this.stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY).modifiers().isEmpty()) {
-            var attr = new AttributeMap(DefaultAttributes.getSupplier(EntityType.PLAYER));
+            var attr = new AttributeMap(DefaultAttributes.getSupplier(EntityTypes.PLAYER));
             attr.getInstance(Attributes.ATTACK_DAMAGE).setBaseValue(0);
             this.stack.forEachModifier(EquipmentSlot.MAINHAND, ((entityAttributeRegistryEntry, entityAttributeModifier) -> {
                 var x = attr.getInstance(entityAttributeRegistryEntry);
@@ -300,7 +295,7 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
 
         if (entity instanceof LivingEntity livingEntity && knockback > 0) {
             var dir = this.calculateHorizontalHurtKnockbackDirection(livingEntity, source);
-            livingEntity.knockback(-knockback, dir.leftDouble(), dir.rightDouble());
+            livingEntity.knockback(-knockback, dir.leftDouble(), dir.rightDouble(), source, (float) damage);
         }
 
         var stackCopy = ItemStackTemplate.fromNonEmptyStack(this.stack);
@@ -669,7 +664,7 @@ public class ItemProjectileEntity extends Projectile implements PolymerEntity, I
 
     @Override
     public EntityType<?> getPolymerEntityType(PacketContext packetContext) {
-        return EntityType.ITEM_DISPLAY;
+        return EntityTypes.ITEM_DISPLAY;
     }
 
     @Override

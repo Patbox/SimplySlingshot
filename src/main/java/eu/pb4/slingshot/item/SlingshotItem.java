@@ -11,7 +11,7 @@ import eu.pb4.slingshot.item.ench.SlingshotEnchantments;
 import eu.pb4.slingshot.util.MirrorLevel;
 import eu.pb4.slingshot.util.NetHandlerExt;
 import eu.pb4.slingshot.util.SlingshotSoundEvents;
-import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.TrailParticleOption;
