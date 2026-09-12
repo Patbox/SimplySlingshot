@@ -60,7 +60,7 @@ public abstract class ProjectileMixin extends Entity implements BounceableExt {
                     result.getDirection().getAxis().choose(1, -1, 1),
                     result.getDirection().getAxis().choose(1, 1, -1)
             ));
-            this.hurtMarked = true;
+            this.syncVelocity = true;
             this.needsSync = true;
             this.playSound(SoundEvents.SLIME_BLOCK_FALL, 1, 1);
             this.onBouncedOff(result);
